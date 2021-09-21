@@ -1,0 +1,52 @@
+import { NextFunction, Request, Response } from "express";
+import { IMarketplace } from "../../interfaces/IMarketplace";
+import MarketplaceModel from "../../models/marketplace";
+
+export class Controller {
+    async createMarketplace(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try{
+            const {mpId, name, url, description, logoUrl} = req.body
+            const mp: IMarketplace = {
+                mpId: Number(mpId), 
+                name, 
+                url, 
+                description, 
+                logoUrl
+            }
+            const newMP = new MarketplaceModel(mp)
+            await newMP.save();
+            res.status(200).json({message: "Marketplace successfully created", marketplace: newMP});
+        }catch(err){
+            next(err)
+        }
+    }
+
+    async getMarketplace(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try{
+            const { mpId } = req.params
+            const marketplace = await MarketplaceModel.findOne({mpId: Number(mpId)});
+            if (!marketplace) throw new Error(`Marketplace not foud with mpId : ${mpId}`)
+            res.status(200).json({message: "Marketplace successfully retrieved", marketplace: marketplace});
+        }catch(err){
+            next(err)
+        }
+    }
+
+    async updateMarketplace(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try{
+            const { mpId } = req.params
+            const { name, url, description, logoUrl} = req.body
+            const marketplace = await MarketplaceModel.findOne({mpId: Number(mpId)});
+            if (!marketplace) throw new Error(`Marketplace not foud with mpId : ${mpId}`)
+            if (name !== undefined) marketplace.name = name
+            if (url !== undefined) marketplace.url = url
+            if (description !== undefined) marketplace.description = description
+            if (logoUrl !== undefined) marketplace.logoUrl = logoUrl
+            await marketplace.save()
+            res.status(200).json({message: "Marketplace successfully updated", marketplace: marketplace});
+        }catch(err){
+            next(err)
+        }
+    }
+}
+export default new Controller();
