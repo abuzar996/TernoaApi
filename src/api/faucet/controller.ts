@@ -3,7 +3,7 @@ import { IFaucetClaim } from "../../interfaces/IFaucetClaim";
 import faucetClaimModel from "../../models/faucetClaim";
 
 export class Controller {
-    async claim(req: Request, res: Response, next: NextFunction): Promise<void> {
+    async claimTestCaps(req: Request, res: Response, next: NextFunction): Promise<void> {
         try{
             const { walletId } = req.params
             //Check if claim is possible
@@ -12,9 +12,9 @@ export class Controller {
             console.log(lastClaim)
             if (lastClaim && lastClaim.createdAt){
                 const timeDiff = new Date().getTime() - lastClaim.createdAt.getTime()
-                if (timeDiff < (24 * 3600 * 1000)){
+                if (timeDiff < (1 * 24 * 3600 * 1000)){
                     console.log(timeDiff)
-                    throw new Error('You need to wait before making another claim')
+                    throw new Error(`You need to wait ${timeDiff} before making another claim`)
                 }
             }
             // CLAIM HERE FROM BC

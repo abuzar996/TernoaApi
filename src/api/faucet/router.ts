@@ -3,6 +3,6 @@ import controller from "./controller";
 
 const router = express.Router();
 
-router.get("/claim/:walletId", controller.claim)
+router.get("/claim-test-caps/:walletId", controller.claimTestCaps)
 
 export default router

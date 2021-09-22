@@ -3,6 +3,15 @@ import { IMarketplace } from "../../interfaces/IMarketplace";
 import MarketplaceModel from "../../models/marketplace";
 
 export class Controller {
+    async getMarketplaces(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try{
+            const marketplaces = await MarketplaceModel.find();
+            res.status(200).json({message: "Marketplaces successfully retrieved", marketplaces: marketplaces});
+        }catch(err){
+            next(err)
+        }
+    }
+    
     async createMarketplace(req: Request, res: Response, next: NextFunction): Promise<void> {
         try{
             const {mpId, name, url, description, logoUrl} = req.body
