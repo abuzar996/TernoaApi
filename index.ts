@@ -5,6 +5,7 @@ import cors from "cors";
 import errorHandler from "./src/common/error.handler";
 import faucetRouter from './src/api/faucet/router'
 import marketplaceRouter from './src/api/marketplace/router'
+import userRouter from './src/api/user/router'
 
 const app = express()
 const port = process.env.PORT || 5000
@@ -26,6 +27,7 @@ app.use(express.text({ limit: process.env.REQUEST_LIMIT || "100kb" }));
 // Routes
 app.use('/api/faucet', faucetRouter);
 app.use('/api/marketplace', marketplaceRouter);
+app.use('/api/users', userRouter);
 
 // Error middleware
 app.use(errorHandler);

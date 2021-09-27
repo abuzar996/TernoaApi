@@ -1,6 +1,8 @@
 import { decodeAddress, signatureVerify } from '@polkadot/util-crypto';
 import { u8aToHex } from '@polkadot/util';
 
+export const LIMIT_MAX_PAGINATION = 50
+
 export const validateEmail = (mail: string) => {
     const mailRegEx = /^([\w-\.]+@([\w-]+\.)+[\w-]{2,4})?$/
     return mail.match(mailRegEx)

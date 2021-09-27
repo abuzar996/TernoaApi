@@ -74,7 +74,7 @@ export class UserService {
       if (!user) throw new Error();
       return user
     } catch (err) {
-      throw new Error(err + "User can't be found");
+      throw new Error(err + ": User can't be found");
     }
   }
 
@@ -179,6 +179,59 @@ export class UserService {
         );
     }catch(err){
       throw err
+    }
+  }
+
+  /**
+   * Like an NFT
+   * @param walletId - wallet Id
+   * @param nftId - nft Id
+   * @throws Will throw an error if already liked or if db can't be reached
+   */
+   async likeNft(walletId: string, nftId: string, serieId: string): Promise<IUser> {
+    try {
+      const user  = await UserModel.findOne({walletId});
+      const key = {serieId, nftId}
+      if (!user) throw new Error()
+      if (user.likedNFTs){
+        if (serieId === "0"){
+          if (user.likedNFTs.map(x => x.nftId).includes(key.nftId)) throw new Error("NFT already liked")
+        }else{
+          if (user.likedNFTs.map(x => x.serieId).includes(key.serieId)) throw new Error("NFT already liked")
+        }
+        user.likedNFTs.push(key)
+      }else{
+        user.likedNFTs= [key]
+      }
+      await user.save()
+      return user
+    } catch (err) {
+      throw new Error("Couldn't like NFT");
+    }
+  }
+
+  /**
+   * Unlike an NFT
+   * @param walletId - wallet Id
+   * @param nftId - nft Id
+   * @throws Will throw an error if already liked or if db can't be reached
+   */
+   async unlikeNft(walletId: string, nftId: string, serieId: string): Promise<IUser> {
+    try {
+      const user  = await UserModel.findOne({walletId});
+      const key = {serieId, nftId}
+      if (!user || !user.likedNFTs) throw new Error()
+      if (serieId === "0"){
+        if (!user.likedNFTs.map(x => x.nftId).includes(key.nftId)) throw new Error("NFT already not liked")
+        user.likedNFTs = user.likedNFTs.filter(x => x.nftId !== key.nftId)
+      }else{
+        if (!user.likedNFTs.map(x => x.serieId).includes(key.serieId)) throw new Error("NFT already not liked")
+        user.likedNFTs = user.likedNFTs.filter(x => x.serieId !== key.serieId)
+      }
+      await user.save()
+      return user
+    } catch (err) {
+      throw new Error("Couldn't unlike NFT");
     }
   }
 }

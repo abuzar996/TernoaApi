@@ -10,6 +10,8 @@ router.get("/verifyTwitter/:id", controller.verifyTwitter)
 router.get("/getUsers", controller.getUsersBywalletId)
 router.get("/:id", controller.getUser)
 router.post("/create", controller.newUser)
+router.post("/like", controller.likeNft)
+router.post("/unlike", controller.unlikeNft)
 router.post("/:walletId", controller.updateUser);
 
 export default router

@@ -1,13 +1,22 @@
 import { NextFunction, Request, Response } from "express";
+import fetch from 'node-fetch'
 import UserService from "../../services/user";
 import { OAuth } from "oauth"
-
+import { LIMIT_MAX_PAGINATION } from "../../utils";
 
 export class Controller {
-    async all(_: Request, res: Response, next: NextFunction): Promise<any> {
+    async all(req: Request, res: Response, next: NextFunction): Promise<any> {
         try {
-            const response = await UserService.getAllUsers();
-            res.json(response);
+            const {page, limit} = req.query
+            if (page && page !== "undefined" && (isNaN(Number(page)) || Number(page) < 1)) throw new Error("Page argument is invalid")
+            if (limit && page !== "undefined" && (isNaN(Number(limit)) || Number(limit) < 1 || Number(limit) > LIMIT_MAX_PAGINATION)) throw new Error("Limit argument is invalid")
+            if (page && limit && page !== "undefined" && limit !== "undefined"){
+                const response = await UserService.getAllUsers(Number(page), Number(limit));
+                res.json(response);
+            }else{
+                const response = await UserService.getAllUsers();
+                res.json(response);
+            }
         } catch (err) {
             next(err);
         }
@@ -77,7 +86,7 @@ export class Controller {
                 process.env.TWITTER_CONSUMER_KEY,
                 process.env.TWITTER_CONSUMER_SECRET,
                 '1.0A',
-                `${req.headers.host?.substr(0,5)==="local" ? "http://" : "https://"}${req.headers.host}/api/mp/users/verifyTwitter/callback`,
+                `${req.headers.host?.substr(0,5)==="local" ? "http://" : "https://"}${req.headers.host}/api/users/verifyTwitter/callback`,
                 'HMAC-SHA1'
             )
             oauth.getOAuthRequestToken((err, oauthToken) => {
@@ -114,6 +123,36 @@ export class Controller {
         res.redirect(process.env.TWITTER_REDIRECT_URL+"&twitterValidated=false")
       }
       res.redirect(process.env.TWITTER_REDIRECT_URL+"&twitterValidated=false")
+    }
+  }
+
+  async likeNft(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const { walletId, nftId, serieId } = req.query
+      if (!walletId || !nftId || !serieId) throw new Error("wallet id or nft id not given")
+      const user = await UserService.likeNft(walletId as string, nftId as string, serieId as string);
+      res.json(user);
+    } catch (err) {
+      next(err)
+    }
+  }
+
+  async unlikeNft(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const { walletId, nftId, serieId } = req.query
+      if (!walletId || !nftId || !serieId) throw new Error("wallet id or nft id not given")
+      const user = await UserService.unlikeNft(walletId as string, nftId as string, serieId as string);
+      res.json(user);
+    } catch (err) {
+      next(err)
     }
   }
 }
