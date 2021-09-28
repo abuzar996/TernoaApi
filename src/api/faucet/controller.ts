@@ -9,12 +9,11 @@ export class Controller {
             //Check if claim is possible
             if (walletId.length !== 48) throw new Error('Invalid address formar')
             const lastClaim = await faucetClaimModel.findOne({walletId}).sort({createdAt: -1})
-            console.log(lastClaim)
             if (lastClaim && lastClaim.createdAt){
                 const timeDiff = new Date().getTime() - lastClaim.createdAt.getTime()
-                if (timeDiff < (1 * 24 * 3600 * 1000)){
-                    console.log(timeDiff)
-                    res.status(403).json(`You need to wait ${timeDiff} before making another claim`)
+                if (timeDiff < (2 * 24 * 3600 * 1000)){
+                    const timeLeftForNextClaim = (2 * 24 * 3600 * 1000) - timeDiff
+                    res.status(403).json(`You need to wait ${timeLeftForNextClaim} before making another claim`)
                 }
             }
             // CLAIM HERE FROM BC
