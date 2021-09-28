@@ -16,6 +16,7 @@ const mongoURI = process.env.MONGODB_URI || ""
 if (process.env.SENTRY_DSN){
   Sentry.init({
     dsn: process.env.SENTRY_DSN,
+    environment: process.env.SENTRY_ENV,
     integrations: [
       // enable HTTP calls tracing
       new Sentry.Integrations.Http({ tracing: true }),
@@ -42,8 +43,8 @@ app.use(
 app.use(express.text({ limit: process.env.REQUEST_LIMIT || "100kb" }));
 
 //Sentry
-if (process.env.SENTRY_DSN && process.env.NODE_ENV === "production") app.use(Sentry.Handlers.requestHandler());
-if (process.env.SENTRY_DSN && process.env.NODE_ENV === "production") app.use(Sentry.Handlers.tracingHandler());
+if (process.env.SENTRY_DSN) app.use(Sentry.Handlers.requestHandler());
+if (process.env.SENTRY_DSN) app.use(Sentry.Handlers.tracingHandler());
 
 // Routes
 app.use('/api/faucet', faucetRouter);
@@ -51,7 +52,7 @@ app.use('/api/marketplace', marketplaceRouter);
 app.use('/api/users', userRouter);
 
 //Sentry error middleware
-if (process.env.SENTRY_DSN && process.env.NODE_ENV === "production") app.use(Sentry.Handlers.errorHandler());
+if (process.env.SENTRY_DSN) app.use(Sentry.Handlers.errorHandler());
 
 // Error middleware
 app.use(errorHandler);
