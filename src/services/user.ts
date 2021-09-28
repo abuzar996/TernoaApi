@@ -84,21 +84,31 @@ export class UserService {
    * @throws Will throw an error if DB can't be reached
    * @return A promise that resolves to the users
    */
-  async findUsersByWalletId(walletIds?: string[], query?: any, page?: number, limit?: number): Promise<IUser[] | PaginateResult<IUser>> {
+  async findUsersByWalletId(walletIds?: string[], query?: any, page?: number, limit?: number): Promise<CustomResponse<IUser>> {
     try {
       if (!walletIds && !query) throw new Error('Invalid parameters')
       if (page && limit){
-        const users = UserModel.paginate(
+        const res: PaginateResult<IUser> = await UserModel.paginate(
           !query ? { walletId: { $in: walletIds } } : JSON.parse(query),
           {
             page, 
             limit
           }
         )
-        return users;
+        const response: CustomResponse<IUser> = {
+          totalCount: res.totalDocs,
+          data: res.docs,
+          hasNextPage: res.hasNextPage,
+          hasPreviousPage: res.hasNextPage
+        }
+        return response;
       }else{
-        const users = UserModel.find(!query ? { walletId: { $in: walletIds } } : JSON.parse(query));
-        return users;
+        const res = await UserModel.find(!query ? { walletId: { $in: walletIds } } : JSON.parse(query));
+        const response: CustomResponse<IUser> = {
+          totalCount: res.length,
+          data: res,
+        }
+        return response;
       }
     } catch (err) {
       throw new Error("Users can't be found");
@@ -167,7 +177,7 @@ export class UserService {
    * @param oauthToken - Oauth token
    * @throws Will throw an error if db can't be reached
    */
-   async getUserByTwitterVerificationToken(oauthToken: string): Promise<IUser > {
+   async getUserByTwitterVerificationToken(oauthToken: string): Promise<IUser> {
     try{
       const user = await UserModel.findOne({ twitterVerificationToken: oauthToken })
       if (!user) throw new Error('User not found with oauth token')
