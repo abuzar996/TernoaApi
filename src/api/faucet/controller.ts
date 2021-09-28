@@ -13,7 +13,7 @@ export class Controller {
                 const timeDiff = new Date().getTime() - lastClaim.createdAt.getTime()
                 if (timeDiff < (2 * 24 * 3600 * 1000)){
                     const timeLeftForNextClaim = (2 * 24 * 3600 * 1000) - timeDiff
-                    throw new Error(`You need to wait ${timeLeftForNextClaim} before making another claim`)
+                    res.status(403).json(`You need to wait ${timeLeftForNextClaim} before making another claim`)
                 }
             }
             // CLAIM HERE FROM BC
