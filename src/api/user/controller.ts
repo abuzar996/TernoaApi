@@ -51,8 +51,10 @@ export class Controller {
     }
     async getUsersBywalletId(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
-            const { walletIds } = req.query
-            const user = await UserService.findUsersByWalletId(walletIds as string[]);
+            const { walletIds, query, page, limit } = req.query
+            if (page && page !== "undefined" && (isNaN(Number(page)) || Number(page) < 1)) throw new Error("Page argument is invalid")
+            if (limit && page !== "undefined" && (isNaN(Number(limit)) || Number(limit) < 1 || Number(limit) > LIMIT_MAX_PAGINATION)) throw new Error("Limit argument is invalid")
+            const user = await UserService.findUsersByWalletId(walletIds as string[], query, Number(page), Number(limit));
             res.json(user);
         } catch (err) {
             next(err);

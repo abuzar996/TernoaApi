@@ -84,10 +84,22 @@ export class UserService {
    * @throws Will throw an error if DB can't be reached
    * @return A promise that resolves to the users
    */
-  async findUsersByWalletId(walletIds: string[]): Promise<IUser[]> {
+  async findUsersByWalletId(walletIds?: string[], query?: any, page?: number, limit?: number): Promise<IUser[] | PaginateResult<IUser>> {
     try {
-      const users = UserModel.find({ walletId: { $in: walletIds } });
-      return users;
+      if (!walletIds && !query) throw new Error('Invalid parameters')
+      if (page && limit){
+        const users = UserModel.paginate(
+          !query ? { walletId: { $in: walletIds } } : JSON.parse(query),
+          {
+            page, 
+            limit
+          }
+        )
+        return users;
+      }else{
+        const users = UserModel.find(!query ? { walletId: { $in: walletIds } } : JSON.parse(query));
+        return users;
+      }
     } catch (err) {
       throw new Error("Users can't be found");
     }
