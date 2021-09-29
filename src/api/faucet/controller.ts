@@ -24,7 +24,7 @@ export class Controller {
                     const hours = (timeLeftForNextClaim/(1000*60*60))%60
                     let err = (new Error(`You need to wait ${Math.floor(hours)}h${Math.floor(minutes)}m${Math.floor(seconds)}s before making another claim`)) as any
                     err.status = 403
-                    next(err)
+                    return next(err)
                 }
             }
             // CLAIM HERE FROM BC
@@ -44,15 +44,15 @@ export class Controller {
                         const claim: IFaucetClaim = { walletId }
                         const claimDB = new faucetClaimModel(claim)
                         await claimDB.save()
-                        res.status(200).json({message: `Successfully claimed for address ${walletId}`, claim: claim});
+                        return res.status(200).json({message: `Successfully claimed for address ${walletId}`, claim: claim});
                     }
                 })
             }else{
                 let err = (new Error(`An error has occured when trying to get you caps, please try again later.`)) as any
-                next(err)
+                return next(err)
             }
         }catch(err){
-            next(err)
+            return next(err)
         }
     }   
 }
