@@ -17,9 +17,12 @@ export class Controller {
             const lastClaim = await faucetClaimModel.findOne({walletId}).sort({createdAt: -1})
             if (lastClaim && lastClaim.createdAt){
                 const timeDiff = new Date().getTime() - lastClaim.createdAt.getTime()
-                if (timeDiff < (2 * 24 * 3600 * 1000)){
-                    const timeLeftForNextClaim = (2 * 24 * 3600 * 1000) - timeDiff
-                    let err = (new Error(`You need to wait ${timeLeftForNextClaim} before making another claim`)) as any
+                if (timeDiff < (1 * 24 * 3600 * 1000)){
+                    const timeLeftForNextClaim = (1 * 24 * 3600 * 1000) - timeDiff
+                    const seconds = (timeLeftForNextClaim/1000)%60
+                    const minutes = (timeLeftForNextClaim/(1000*60))%60
+                    const hours = (timeLeftForNextClaim/(1000*60*60))%60
+                    let err = (new Error(`You need to wait ${hours} hours 10 ${minutes} and ${seconds} seconds before making another claim`)) as any
                     err.status = 403
                     next(err)
                 }
