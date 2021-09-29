@@ -4,4 +4,6 @@ export interface IMarketplace {
   url: string;
   description: string
   logoUrl: String
+  salesCommission: String
+  type: String
 }

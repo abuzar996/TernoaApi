@@ -16,7 +16,13 @@ const Marketplace = new mongoose.Schema({
   },
   logoUrl: {
     type: String,
-  }
+  },
+  salesCommission: {
+    type: String,
+  },
+  type: {
+    type: String,
+  },
 }, { timestamps: true });
 
 const MarketplaceModel = mongoose.model<IMarketplace & mongoose.Document>("Marketplace", Marketplace);
