@@ -71,6 +71,7 @@ export class Controller {
     }
     async updateUser(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
+            if (!req.params.walletId || !req.body) throw new Error("invalid wallet id or parameters")
             const user = await UserService.updateUser(req.params.walletId, req.body);
             res.json(user);
         } catch (err) {
