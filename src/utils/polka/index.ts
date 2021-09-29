@@ -45,7 +45,7 @@ export const unFormatBalance = (_input: number) => {
     } else {
       result = new BN(input.replace(/[^\d]/g, '')).mul(BN_TEN.pow(siPower));
     }
-    console.log('unformat balance result', result);
+    //console.log('unformat balance result', result);
     return result;
 }
 
