@@ -22,7 +22,7 @@ export class Controller {
                     const seconds = (timeLeftForNextClaim/1000)%60
                     const minutes = (timeLeftForNextClaim/(1000*60))%60
                     const hours = (timeLeftForNextClaim/(1000*60*60))%60
-                    let err = (new Error(`You need to wait ${hours} hours 10 ${minutes} and ${seconds} seconds before making another claim`)) as any
+                    let err = (new Error(`You need to wait ${Math.floor(hours)}h${Math.floor(minutes)}m${Math.floor(seconds)}s before making another claim`)) as any
                     err.status = 403
                     next(err)
                 }
