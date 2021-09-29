@@ -30,7 +30,9 @@ export class Controller {
                 existingUser = await UserService.findUser(walletId);
             }finally {
                 if (existingUser) {
-                    res.status(409).send("Wallet user already exists");
+                    let err = new Error('Wallet user already exists') as any
+                    err.status=409
+                    next(err)
                 } else {
                     const user = await UserService.createUser({ walletId });
                     res.json(user);
