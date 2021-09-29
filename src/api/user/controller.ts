@@ -24,16 +24,15 @@ export class Controller {
     async newUser(req: Request,  res: Response, next: NextFunction): Promise<void> {
         try {
             const { body } = req;
-            const { walletId } = body;
+            const { walletId } = JSON.parse(body);
             let existingUser = null;
             try {
                 existingUser = await UserService.findUser(walletId);
-            }
-            finally {
+            }finally {
                 if (existingUser) {
                     res.status(409).send("Wallet user already exists");
                 } else {
-                    const user = await UserService.createUser(body);
+                    const user = await UserService.createUser({ walletId });
                     res.json(user);
                 }
             }
@@ -72,7 +71,8 @@ export class Controller {
     async updateUser(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             if (!req.params.walletId || !req.body) throw new Error("invalid wallet id or parameters")
-            const user = await UserService.updateUser(req.params.walletId, req.body);
+            const jsonBody = JSON.parse(req.body)
+            const user = await UserService.updateUser(req.params.walletId, jsonBody);
             res.json(user);
         } catch (err) {
             next(err)

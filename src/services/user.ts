@@ -74,7 +74,7 @@ export class UserService {
       if (!user) throw new Error();
       return user
     } catch (err) {
-      throw new Error(err + ": User can't be found");
+      throw new Error("User can't be found");
     }
   }
 
