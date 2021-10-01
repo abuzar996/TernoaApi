@@ -8,6 +8,7 @@ import errorHandler from "./src/common/error.handler";
 import faucetRouter from './src/api/faucet/router'
 import marketplaceRouter from './src/api/marketplace/router'
 import userRouter from './src/api/user/router'
+import cronJob from './src/utils/cron'
 
 const app = express()
 const port = process.env.PORT || 5000
@@ -64,6 +65,7 @@ mongoose.connect(mongoURI)
   console.log("db connection successfull");
   app.listen(port, () => {
     console.log(`Server is listening on port: ${port} and connected to DB`);
+    cronJob.start()
   })
 })
 .catch(err => {

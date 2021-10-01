@@ -8,6 +8,10 @@ const FaucetClaim = new mongoose.Schema({
     minlength: 48,
     maxlength: 48,
   },
+  processed: {
+    type: Boolean,
+    default: false,
+  }
 }, { timestamps: true });
 
 const FaucetClaimModel = mongoose.model<IFaucetClaim & mongoose.Document>("FaucetClaim", FaucetClaim);
