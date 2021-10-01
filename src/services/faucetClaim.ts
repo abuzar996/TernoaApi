@@ -43,11 +43,10 @@ export class FaucetClaimService {
   */
   async processQueue(): Promise<any> {
     try {
-      console.log("faucet claim batch")
       const oldestPendingClaims = await FaucetClaimModel.find({processed: false}).sort({createdAt: -1}).limit(DEFAULT_FAUCET_BATCH_SIZE)
-      console.log("number of wallet to process", oldestPendingClaims.length)
       const oldestPendingClaimsWalletIds = oldestPendingClaims.map(x => x.walletId)
       if (oldestPendingClaimsWalletIds.length>0){
+        console.log("number of wallet to process", oldestPendingClaimsWalletIds.length)
         await processFaucetClaims(oldestPendingClaimsWalletIds, this.setClaimsProcessed)
       }else{
         console.log("No batch to process, you can rest now")
