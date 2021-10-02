@@ -5,6 +5,7 @@
 ## Summary
 - [Installation](#Installation)
 - [Usage](#Usage)
+- [Deployment](#Deployment)
 - [Information](#Information)
 - [Environment variables](#Environment-variables)
 - [API Endpoints](#API-Endpoints)
@@ -35,6 +36,10 @@ To build the project
 npm run build
 ```
 
+## Deployment
+Automatic deployment is available on CleverCloud
+
+
 ## Information
 Ternoa-API handles the data of all marketplaces users, it manages the data of all the marketplaces and also handles faucet claims for test caps.
 This API is linked to SecretNFT app and it's api. Don't hesitate to have a look on those two repositories on our organisation [github](https://github.com/capsule-corp-ternoa.)
@@ -57,18 +62,59 @@ To run this project, you will need to add the following environment variables to
 
 ## API Endpoints
 ### Marketplaces
+`GET /api/marketplace/` : Gets all marketplaces
+
+`GET /api/marketplace/:id` : Gets marketplace by id
+
+Parameters: 
+| PARAMETER | TYPE | MANDATORY | USE |
+| :---|---|---|---|
+| id | request param | yes | id of marketplace to get |
+
+`POST /api/marketplace/` : Creates a marketplace (DISABLED RIGHT NOW)
+
+Parameters: 
+| PARAMETER | TYPE | MANDATORY | USE |
+| :---|---|---|---|
+| mpId | query param | yes | id of marketplace to create, according to blockchain |
+| name | query param | yes | marketplace name |
+| url | query param | yes | marketplace url (used for share feature and redirects) |
+| description | query param | yes | marketplace description |
+| logoUrl | query param | yes | marketplace logo url (to display on app) |
+| salesCommission | query param | yes | sales commission percentage |
+| type | query param | yes | type of marketplace |
+
+`POST /api/marketplace/:mpId` : Updates a marketplace (DISABLED RIGHT NOW)
+
+Parameters: 
+| PARAMETER | TYPE | MANDATORY | USE |
+| :---|---|---|---|
+| mpId | request param | yes | id of marketplace to create, according to blockchain |
+| name | query param | no | marketplace name |
+| url | query param | no | marketplace url (used for share feature and redirects) |
+| description | query param | no | marketplace description |
+| logoUrl | query param | no | marketplace logo url (to display on app) |
+| salesCommission | query param | no | sales commission percentage |
+| type | query param | no | type of marketplace |
+
 
 ### Faucet
+`GET /api/faucet/:id` : add a claim for test caps in queue for id address
+
+Parameters: 
+| PARAMETER | TYPE | MANDATORY | USE |
+| :---|---|---|---|
+| id | request param | yes | id of wallet to claim caps for |
 
 ### Users
-`PATCH /api/users/reviewRequested/:id` : Allow user to request review of their account (use the Ternoa-api)
+`PATCH /api/users/reviewRequested/:id` : Allow user to request review of their account (gets called by marketplace-api)
 
 Parameters: 
 | PARAMETER | TYPE | MANDATORY | USE |
 | :---|---|---|---|
 | id | request param | yes | id of user to review request for |
 
-`GET /api/users/` : Gets all users (use the Ternoa-api)
+`GET /api/users/` : Gets all users (gets called by marketplace-api)
 
 Parameters: 
 | PARAMETER | TYPE | MANDATORY | USE |
@@ -76,21 +122,21 @@ Parameters:
 | page | query param | no | page number (1) |
 | limit | query param | no | number of elements per page (10) |
 
-`GET /api/users/verifyTwitter/:id` : Verify Twitter username of specified user's id (use the Ternoa-api)
+`GET /api/users/verifyTwitter/:id` : Verify Twitter username of specified user's id (gets called by marketplace-api)
 
 Parameters: 
 | PARAMETER | TYPE | MANDATORY | USE |
 | :---|---|---|---|
 | id | request param | yes | id of user to review request for |
 
-`GET /api/users/getUsers/` : Get users by wallet ids (use the Ternoa-api)
+`GET /api/users/getUsers/` : Get users by wallet ids (gets called by marketplace-api)
 
 Parameters: 
 | PARAMETER | TYPE | MANDATORY | USE |
 | :---|---|---|---|
 | walletIds | query param | yes | wallet addresses (?walletIds=5HGa..., ?walletIds=5HGa...&walletIds=5HTa...) |
 
-`GET /api/users/:id` : Get user by wallet id (use the Ternoa-api)
+`GET /api/users/:id` : Get user by wallet id (gets called by marketplace-api)
 
 Parameters: 
 | PARAMETER | TYPE | MANDATORY | USE |
@@ -116,14 +162,14 @@ Parameters:
 | page | query param | no | page number (1) |
 | limit | query param | no | number of elements per page (10) |
 
-`POST /api/users/create` : Create a new user if it does not exist (use the Ternoa-api)
+`POST /api/users/create` : Create a new user if it does not exist (gets called by marketplace-api)
 
 Parameters: 
 | PARAMETER | TYPE | MANDATORY | USE |
 | :---|---|---|---|
 | walletId | body param | yes | wallet address of user to create |
 
-`POST /api/users/like` : Like an NFT (use the Ternoa-api)
+`POST /api/users/like` : Like an NFT (gets called by marketplace-api)
 
 Parameters: 
 | PARAMETER | TYPE | MANDATORY | USE |
@@ -132,7 +178,7 @@ Parameters:
 | nftId | query param | yes | NFT id to like |
 | serieId | query param | yes | NFT serieId to like |
 
-`POST /api/users/unlike` : Unike an NFT (use the Ternoa-api)
+`POST /api/users/unlike` : Unike an NFT (gets called by marketplace-api)
 
 Parameters: 
 | PARAMETER | TYPE | MANDATORY | USE |
@@ -141,7 +187,7 @@ Parameters:
 | nftId | query param | yes | NFT id to like |
 | serieId | query param | yes | NFT serieId to like |
 
-`POST /api/users/:walletId` : Update a user (use the Ternoa-api, must be signed by wallet)
+`POST /api/users/:walletId` : Update a user (gets called by marketplace-api, must be signed by wallet)
 
 Parameters: 
 | PARAMETER | TYPE | MANDATORY | USE |
