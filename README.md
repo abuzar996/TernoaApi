@@ -49,7 +49,6 @@ To run this project, you will need to add the following environment variables to
 
 | VARIABLE | VALUE | USAGE |
 | :---|---|--- |
-
 | INDEXER_URL | https://indexer.chaos.ternoa.com/ | Address of Ternoa's blockchain indexer |
 | MONGODB_URI | mongodb+srv://***:***@***?retryWrites=true&w=majority | Mongo DB URI to store data |
 | BLOCK_CHAIN_URL | wss://chaos.ternoa.com | blockchain address |
