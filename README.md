@@ -147,22 +147,6 @@ Parameters:
 | incViews | query param | no | increment views or not (true, false) |
 | viewerWalletId | query param | no | wallet address of the viewer, if connected |
 
-`GET /api/users/:id/caps` : Get user's caps balance
-
-Parameters: 
-| PARAMETER | TYPE | MANDATORY | USE |
-| :---|---|---|---|
-| id | request param | yes | wallet address of user to get balance |
-
-`GET /api/users/:id/liked` : Get user's liked NFTs
-
-Parameters: 
-| PARAMETER | TYPE | MANDATORY | USE |
-| :---|---|---|---|
-| id | request param | yes | wallet address of user to get likes |
-| page | query param | no | page number (1) |
-| limit | query param | no | number of elements per page (10) |
-
 `POST /api/users/create` : Create a new user if it does not exist (gets called by marketplace-api)
 
 Parameters: 
