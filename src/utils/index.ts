@@ -2,7 +2,7 @@ import { decodeAddress, signatureVerify } from '@polkadot/util-crypto';
 import { u8aToHex } from '@polkadot/util';
 
 export const LIMIT_MAX_PAGINATION = 50
-export const DEFAULT_CAPS_AMOUNT = 20
+export const DEFAULT_CAPS_AMOUNT = 150
 export const DEFAULT_FAUCET_BATCH_SIZE = 1000
 
 export const validateEmail = (mail: string) => {
