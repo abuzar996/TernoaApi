@@ -27,6 +27,12 @@ export class FaucetClaimService {
             throw err
         }
       }
+      const totalClaimsNumber = await FaucetClaimModel.count()
+      if (totalClaimsNumber*150 > 100000){
+        let err = (new Error(`All faucet claims have been taken, please come back tomorrow`)) as any
+        err.status = 503
+        throw err
+      }
       //Add claim in queue in DB for cron job to execute
       const claim: IFaucetClaim = { walletId, processed: false }
       const claimDB = new FaucetClaimModel(claim)
