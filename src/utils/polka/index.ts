@@ -15,6 +15,8 @@ const typesConverted = types as any
 let api: any = null;
 let keyring: any = null;
 let sender: any = null;
+let accountWalletSub: any = null
+let balance: any = 0
 
 export const getChainApiInstance = async () => {
     if (api && api.isConnected) {
@@ -92,4 +94,17 @@ export const processFaucetClaims = async (arrayOfAddresses: string[], setProcess
     }else{
         throw new Error(`An error has occured processing this batch. (${arrayOfAddresses})`)
     }
+}
+
+export const getFaucetBalance = async () => {
+    if (!(accountWalletSub && typeof accountWalletSub === 'function')) {
+        const api = await getChainApiInstance()
+        const sender = await getSender()
+        if (api && sender){
+            accountWalletSub = await api.query.system.account(sender.address)
+            const { free } = accountWalletSub.data;
+            balance = Number(free / (Math.pow(10,18)))
+        }
+    }
+    return balance
 }

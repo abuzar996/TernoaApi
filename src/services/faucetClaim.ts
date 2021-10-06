@@ -1,7 +1,7 @@
 import FaucetClaimModel from "../models/faucetClaim";
 import { IFaucetClaim } from "../interfaces/IFaucetClaim";
-import { DEFAULT_FAUCET_BATCH_SIZE } from "../utils";
-import { processFaucetClaims } from "../utils/polka";
+import { DEFAULT_CAPS_AMOUNT, DEFAULT_FAUCET_BATCH_SIZE } from "../utils";
+import { getFaucetBalance, processFaucetClaims } from "../utils/polka";
 
 export class FaucetClaimService {
   /**
@@ -27,8 +27,8 @@ export class FaucetClaimService {
             throw err
         }
       }
-      const totalClaimsNumber = await FaucetClaimModel.count()
-      if (totalClaimsNumber*150 > 100000){
+      const faucetBalance = await getFaucetBalance()
+      if (faucetBalance < DEFAULT_CAPS_AMOUNT){
         let err = (new Error(`All faucet claims have been taken, please come back tomorrow`)) as any
         err.status = 503
         throw err
