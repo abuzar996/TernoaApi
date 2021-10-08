@@ -83,7 +83,7 @@ export const processFaucetClaims = async (arrayOfAddresses: string[], setProcess
         let extrinsic = api.tx.utility.batch(batchedTransactions)
         const unsub = await extrinsic.signAndSend(sender, async (result: any) => {
             if (result.status.isInBlock) {
-                console.log(`Transaction included at blockHash ${result.status.asInBlock}`);
+                console.log(`Transaction included at blockHash ${result.status.asInBlock} addresses:(${arrayOfAddresses})`);
                 unsub();
                 /*if (result. is ok){
                 }*/
