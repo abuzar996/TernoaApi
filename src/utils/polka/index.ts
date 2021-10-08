@@ -168,7 +168,7 @@ export const getFaucetNFTs = async () => {
         });
         const res = await GQLRes.json()
         if(res && res.data && res.data.nftEntities && res.data.nftEntities.nodes){
-            console.log('res', res.data.nftEntities.nodes);
+            // console.log('res', res.data.nftEntities.nodes);
             return res.data.nftEntities.nodes
         }else {
             return []
