@@ -215,18 +215,17 @@ export class UserService {
       const user  = await UserModel.findOne({walletId});
       const key = {serieId, nftId}
       if (!user) throw new Error()
-      if (user.likedNFTs){
+      const likedArray = user.likedNFTs || []
+      if (likedArray){
         if (serieId === "0"){
-          if (user.likedNFTs.map(x => x.nftId).includes(key.nftId)) throw new Error("NFT already liked")
+          if (likedArray.map(x => x.nftId).includes(key.nftId)) throw new Error("NFT already liked")
         }else{
-          if (user.likedNFTs.map(x => x.serieId).includes(key.serieId)) throw new Error("NFT already liked")
+          if (likedArray.map(x => x.serieId).includes(key.serieId)) throw new Error("NFT already liked")
         }
-        user.likedNFTs.push(key)
-      }else{
-        user.likedNFTs= [key]
       }
-      await user.save()
-      return user
+      likedArray.push(key)
+      const newUser = await UserModel.findOneAndUpdate({walletId}, {likedNFTs: likedArray},{new: true})
+      return newUser
     } catch (err) {
       throw new Error("Couldn't like NFT");
     }
@@ -243,15 +242,16 @@ export class UserService {
       const user  = await UserModel.findOne({walletId});
       const key = {serieId, nftId}
       if (!user || !user.likedNFTs) throw new Error()
+      let likedArray = user.likedNFTs
       if (serieId === "0"){
-        if (!user.likedNFTs.map(x => x.nftId).includes(key.nftId)) throw new Error("NFT already not liked")
-        user.likedNFTs = user.likedNFTs.filter(x => x.nftId !== key.nftId)
+        if (!likedArray.map(x => x.nftId).includes(key.nftId)) throw new Error("NFT already not liked")
+        likedArray = likedArray.filter(x => x.nftId !== key.nftId)
       }else{
-        if (!user.likedNFTs.map(x => x.serieId).includes(key.serieId)) throw new Error("NFT already not liked")
-        user.likedNFTs = user.likedNFTs.filter(x => x.serieId !== key.serieId)
+        if (!likedArray.map(x => x.serieId).includes(key.serieId)) throw new Error("NFT already not liked")
+        likedArray = likedArray.filter(x => x.serieId !== key.serieId)
       }
-      await user.save()
-      return user
+      const newUser = await UserModel.findOneAndUpdate({walletId}, {likedNFTs: likedArray},{new: true})
+      return newUser
     } catch (err) {
       throw new Error("Couldn't unlike NFT");
     }
