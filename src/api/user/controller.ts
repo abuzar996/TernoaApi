@@ -3,6 +3,7 @@ import fetch from 'node-fetch'
 import UserService from "../../services/user";
 import { OAuth } from "oauth"
 import { LIMIT_MAX_PAGINATION } from "../../utils";
+import UserModel from "../../models/user";
 
 export class Controller {
     async all(req: Request, res: Response, next: NextFunction): Promise<any> {
@@ -27,7 +28,7 @@ export class Controller {
             const { walletId } = JSON.parse(body);
             let existingUser = null;
             try {
-                existingUser = await UserService.findUser(walletId);
+                existingUser = await UserModel.findOne({ walletId });;
             }finally {
                 if (existingUser) {
                     let err = new Error('Wallet user already exists') as any
