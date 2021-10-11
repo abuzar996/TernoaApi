@@ -26,15 +26,14 @@ export class Controller {
         try {
             const { body } = req;
             const { walletId } = JSON.parse(body);
-            console.log(walletId)
             let existingUser = null;
             try {
-                existingUser = await UserModel.findOne({ walletId });;
+                existingUser = await UserModel.findOne({ walletId });
             }finally {
                 if (existingUser) {
                     let err = new Error('Wallet user already exists') as any
                     err.status=409
-                    next(err)
+                    throw err
                 } else {
                     const user = await UserService.createUser({ walletId });
                     res.json(user);
