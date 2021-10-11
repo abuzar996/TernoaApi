@@ -28,7 +28,6 @@ export class Controller {
             const { walletId } = JSON.parse(body);
             let existingUser = null;
             existingUser = await UserModel.findOne({ walletId });
-            console.log("existing user", existingUser)
             if (existingUser) {
                 let err = new Error('Wallet user already exists') as any
                 err.status=409
