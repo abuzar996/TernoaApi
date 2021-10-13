@@ -11,6 +11,10 @@ const NFTClaim = new mongoose.Schema({
   processed: {
     type: Boolean,
     default: false,
+  },
+  serieId: {
+    type: String,
+    required: false,
   }
 }, { timestamps: true });
 

@@ -15,7 +15,7 @@ export class FaucetClaimService {
     walletId: string,
   ): Promise<any> {
     try {
-      const lastClaim = await FaucetClaimModel.findOne({ walletId }).sort({ createdAt: -1 })
+      const lastClaim = await FaucetClaimModel.findOne({ walletId }).sort({ createdAt: 1 })
       //Check if claim is possible
       if (lastClaim && lastClaim.createdAt) {
         const timeDiff = new Date().getTime() - lastClaim.createdAt.getTime()
@@ -51,9 +51,10 @@ export class FaucetClaimService {
   */
   async addNFTClaimToQueue(
     walletId: string,
+    serieId: string,
   ): Promise<any> {
     try {
-      const lastClaim = await NFTClaimModel.findOne({ walletId }).sort({ createdAt: -1 })
+      const lastClaim = await NFTClaimModel.findOne({ walletId }).sort({ createdAt: 1 })
       //Check if claim is possible
       if (lastClaim) {
         let err = (new Error(`You need have already claimed NFT`)) as any
@@ -61,14 +62,14 @@ export class FaucetClaimService {
         throw err
       }
 
-      const faucetNFTs = await getFaucetNFTs()
+      const faucetNFTs = await getFaucetNFTs(serieId)
       if (faucetNFTs.length==0) {
         let err = (new Error(`All NFT claims have been taken`)) as any
         err.status = 503
         throw err
       }
       //Add claim in queue in DB for cron job to execute
-      const claim: INFTClaim = { walletId, processed: false }
+      const claim: INFTClaim = { walletId, processed: false, serieId }
       const claimDB = new NFTClaimModel(claim)
       return await claimDB.save()
     } catch (err) {
@@ -82,14 +83,13 @@ export class FaucetClaimService {
   */
   async processQueue(): Promise<any> {
     try {
-      const oldestPendingClaims = await FaucetClaimModel.find({ processed: false }).sort({ createdAt: -1 }).limit(DEFAULT_FAUCET_BATCH_SIZE)
+      const oldestPendingClaims = await FaucetClaimModel.find({ processed: false }).sort({ createdAt: 1 }).limit(DEFAULT_FAUCET_BATCH_SIZE)
       const oldestPendingClaimsWalletIds = oldestPendingClaims.map(x => x.walletId)
-      const oldestPendingNFTClaims = await NFTClaimModel.find({ processed: false }).sort({ createdAt: -1 }).limit(DEFAULT_FAUCET_BATCH_SIZE)
-      const oldestPendingNFTClaimsWalletIds = oldestPendingNFTClaims.map(x => x.walletId)
-      if (oldestPendingClaimsWalletIds.length > 0 || oldestPendingNFTClaimsWalletIds.length > 0) {
+      const oldestPendingNFTClaims = await NFTClaimModel.find({ processed: false }).sort({ createdAt: 1 }).limit(DEFAULT_FAUCET_BATCH_SIZE)
+      if (oldestPendingClaimsWalletIds.length > 0 || oldestPendingNFTClaims.length > 0) {
         console.log("number of CAPS Claim to process", oldestPendingClaimsWalletIds.length)
-        console.log("number of NFT Claim to process", oldestPendingNFTClaimsWalletIds.length)
-        await processFaucetClaims(oldestPendingClaimsWalletIds, oldestPendingNFTClaimsWalletIds, this.setClaimsProcessed)
+        console.log("number of NFT Claim to process", oldestPendingNFTClaims.length)
+        await processFaucetClaims(oldestPendingClaimsWalletIds, oldestPendingNFTClaims, this.setClaimsProcessed)
       } else {
         console.log("No batch to process, you can rest now")
       }
@@ -106,13 +106,13 @@ export class FaucetClaimService {
   async setClaimsProcessed(CAPSClaimAddresses: any, NFTClaimAddress: any): Promise<any> {
     try {
       if(CAPSClaimAddresses.length >0 ){
-        const oldestPendingClaims = await FaucetClaimModel.find({ "walletId": {"$in":CAPSClaimAddresses} }).sort({ createdAt: -1 }).limit(DEFAULT_FAUCET_BATCH_SIZE)
+        const oldestPendingClaims = await FaucetClaimModel.find({ "walletId": {"$in":CAPSClaimAddresses} }).sort({ createdAt: 1 }).limit(DEFAULT_FAUCET_BATCH_SIZE)
         oldestPendingClaims.forEach(x => x.processed = true)
         Promise.all(oldestPendingClaims.map(x => x.save()))
       }
 
       if(NFTClaimAddress.length >0 ){
-        const oldestPendingNFTClaims = await NFTClaimModel.find({ "walletId": {"$in":NFTClaimAddress} }).sort({ createdAt: -1 }).limit(DEFAULT_FAUCET_BATCH_SIZE)
+        const oldestPendingNFTClaims = await NFTClaimModel.find({ "walletId": {"$in":NFTClaimAddress} }).sort({ createdAt: 1 }).limit(DEFAULT_FAUCET_BATCH_SIZE)
         oldestPendingNFTClaims.forEach(x => x.processed = true)
         Promise.all(oldestPendingNFTClaims.map(x => x.save()))
       }

@@ -25,3 +25,18 @@ export const isValidSignature = (plainData: string, signedData: string, address:
     const hexPublicKey = u8aToHex(publicKey);
     return signatureVerify(plainData, signedData, hexPublicKey).isValid;
 }
+
+export const getSerieIdByQrId = (qrId: string) => {
+    switch(qrId){
+        case "0":
+            return process.env.NFT_SERIES_ID
+        case "1":
+            return process.env.NFT_SERIES_ID
+        case "2":
+            return process.env.NFT_SERIES_ID
+        case "3":
+            return process.env.NFT_SERIES_ID
+        default:
+            return process.env.NFT_SERIES_ID
+    }
+}

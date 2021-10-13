@@ -6,6 +6,7 @@ import types from './types'
 import BN from 'bn.js';
 import fetch from "node-fetch";
 import { DEFAULT_CAPS_AMOUNT } from '..';
+import { INFTClaim } from '../../interfaces/INFTClaim';
 
 const parseArgs = require('minimist')(process.argv.slice(2))
 const SEED = parseArgs["SEED"] ? parseArgs["SEED"] : null
@@ -71,23 +72,27 @@ export const isValidAddress = (address: string) => {
     }
 }
 
-export const processFaucetClaims = async (arrayOfCAPSAddresses: string[], arrayOfNFTAddresses: string[], setProcessedCallback: Function) => {
+export const processFaucetClaims = async (arrayOfCAPSAddresses: string[], arrayOfNFTClaims: INFTClaim[], setProcessedCallback: Function) => {
     // CLAIM HERE FROM BC
     const api = await getChainApiInstance()
     const sender = await getSender()
-    let availableNFTIds = []
-    if (arrayOfNFTAddresses.length > 0) {
-        availableNFTIds = await getFaucetNFTs()
-    }
+    let availableNFTIds = [] as any
+    let givenNFTIdInThisBatch = [] as any
     if (api && sender) {
         const batchedTransactions = [];
         for (let i = 0; i < arrayOfCAPSAddresses.length; i++) {
             batchedTransactions.push(api.tx.balances.transferKeepAlive(arrayOfCAPSAddresses[i], unFormatBalance(DEFAULT_CAPS_AMOUNT)));
         }
-
-        if (arrayOfNFTAddresses.length > 0 && availableNFTIds.length >= arrayOfNFTAddresses.length) {
-            for (let i = 0; i < arrayOfNFTAddresses.length; i++) {
-                batchedTransactions.push(api.tx.nfts.transfer(Number(availableNFTIds[i].id), arrayOfNFTAddresses[i]));
+        for (let i = 0; i < arrayOfNFTClaims.length; i++) {
+            if (arrayOfNFTClaims[i].serieId){
+                availableNFTIds = await getFaucetNFTs(arrayOfNFTClaims[i].serieId as string)
+                let availableNFTIdsNotGivenYet = availableNFTIds.filter((x: any) => !givenNFTIdInThisBatch.includes(x.id))
+                if (availableNFTIdsNotGivenYet.length > 0){
+                    givenNFTIdInThisBatch.push(availableNFTIdsNotGivenYet[0].id)
+                    batchedTransactions.push(api.tx.nfts.transfer(Number(availableNFTIdsNotGivenYet[0].id), arrayOfNFTClaims[i].walletId));
+                }else{
+                    console.log(`Account ${arrayOfNFTClaims[i].walletId} could not have been processed cause serieId ${arrayOfNFTClaims[i].serieId} had no more NFT`)
+                }
             }
         }
         if (batchedTransactions.length > 0) {
@@ -137,7 +142,7 @@ export const getFaucetBalance = async () => {
     return balance
 }
 
-export const getFaucetNFTs = async () => {
+export const getFaucetNFTs = async (serieId: string) => {
     try {
         const sender = await getSender()
         const json={
@@ -147,7 +152,7 @@ export const getFaucetNFTs = async () => {
             nftEntities(filter: { 
             and : [
               { owner: { equalTo: "${sender.address}" } },
-              {serieId:{equalTo:"${process.env.NFT_SERIES_ID}"}}
+              {serieId:{equalTo:"${serieId || ""}"}}
               {timestampBurn:{isNull:true}}
             ]
           } 
