@@ -29,7 +29,7 @@ export class Controller {
             // Check address validity
             if (walletId.length !== 48 || !isValidAddress(walletId)) throw new Error('Invalid address format')
             const claim = await faucetClaimService.addNFTClaimToQueue(walletId, serieId as string)
-            res.status(200).json({ message: `Successfully requested NFT (serieId: ${serieId}) for ${walletId}. NFT will appear in your account soon`, claim: claim });
+            res.status(200).json({ message: `Successfully requested NFT. NFT will appear in your account soon`, claim: claim });
         }catch(err){
             return next(err)
         }
