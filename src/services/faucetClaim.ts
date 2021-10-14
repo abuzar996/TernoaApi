@@ -15,7 +15,7 @@ export class FaucetClaimService {
     walletId: string,
   ): Promise<any> {
     try {
-      const lastClaim = await FaucetClaimModel.findOne({ walletId }).sort({ createdAt: 1 })
+      const lastClaim = await FaucetClaimModel.findOne({ walletId }).sort({ createdAt: -1 })
       //Check if claim is possible
       if (lastClaim && lastClaim.createdAt) {
         const timeDiff = new Date().getTime() - lastClaim.createdAt.getTime()
@@ -54,7 +54,7 @@ export class FaucetClaimService {
     serieId: string,
   ): Promise<any> {
     try {
-      const lastClaim = await NFTClaimModel.findOne({ walletId }).sort({ createdAt: 1 })
+      const lastClaim = await NFTClaimModel.findOne({ walletId }).sort({ createdAt: -1 })
       //Check if claim is possible
       if (lastClaim) {
         let err = (new Error(`You need have already claimed NFT`)) as any
