@@ -9,6 +9,7 @@ export class Controller {
             const { walletId } = req.params
             // Check address validity
             if (walletId.length !== 48 || !isValidAddress(walletId)) throw new Error('Invalid address format')
+            //Check address format
             const claim = await faucetClaimService.addCAPSClaimToQueue(walletId)
             res.status(200).json({ message: `Successfully requested caps for ${walletId}. Caps should appear in your balance soon`, claim: claim });
         }catch(err){

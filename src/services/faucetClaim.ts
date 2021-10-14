@@ -106,13 +106,13 @@ export class FaucetClaimService {
   async setClaimsProcessed(CAPSClaimAddresses: any, NFTClaimAddress: any): Promise<any> {
     try {
       if(CAPSClaimAddresses.length >0 ){
-        const oldestPendingClaims = await FaucetClaimModel.find({ "walletId": {"$in":CAPSClaimAddresses} }).sort({ createdAt: 1 }).limit(DEFAULT_FAUCET_BATCH_SIZE)
+        const oldestPendingClaims = await FaucetClaimModel.find({$and:[{walletId: {$in:CAPSClaimAddresses}}, {processed: false}]}).sort({ createdAt: 1 }).limit(DEFAULT_FAUCET_BATCH_SIZE)
         oldestPendingClaims.forEach(x => x.processed = true)
         Promise.all(oldestPendingClaims.map(x => x.save()))
       }
 
       if(NFTClaimAddress.length >0 ){
-        const oldestPendingNFTClaims = await NFTClaimModel.find({ "walletId": {"$in":NFTClaimAddress} }).sort({ createdAt: 1 }).limit(DEFAULT_FAUCET_BATCH_SIZE)
+        const oldestPendingNFTClaims = await NFTClaimModel.find({$and:[{walletId: {$in:NFTClaimAddress}}, {processed: false}]}).sort({ createdAt: 1 }).limit(DEFAULT_FAUCET_BATCH_SIZE)
         oldestPendingNFTClaims.forEach(x => x.processed = true)
         Promise.all(oldestPendingNFTClaims.map(x => x.save()))
       }
