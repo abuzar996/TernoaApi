@@ -1,7 +1,7 @@
 {
-  "name": "sgx-api-replacement",
+  "name": "ternoa-api",
   "version": "0.1.0",
-  "description": "Ternoa SGX api",
+  "description": "Ternoa-API",
   "main": "index.js",
   "scripts": {
     "start": "nodemon index.ts",
