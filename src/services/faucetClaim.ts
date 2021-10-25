@@ -32,7 +32,7 @@ export class FaucetClaimService {
       const faucetBalance = await getFaucetBalance()
       if (faucetBalance < DEFAULT_CAPS_AMOUNT) {
         let err = (new Error(`All faucet claims have been taken, please come back tomorrow`)) as any
-        err.status = 503
+        err.status = 405
         throw err
       }
       //Add claim in queue in DB for cron job to execute
