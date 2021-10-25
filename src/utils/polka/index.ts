@@ -72,6 +72,14 @@ export const isValidAddress = (address: string) => {
     }
 }
 
+export const convertAddress = (address: string) => {
+    try{
+        return encodeAddress(isHex(address) ? hexToU8a(address) : decodeAddress(address));
+    }catch(err){
+        console.log(err)
+    }
+}
+
 export const processFaucetClaims = async (arrayOfCAPSAddresses: string[], arrayOfNFTClaims: INFTClaim[], setProcessedCallback: Function) => {
     // CLAIM HERE FROM BC
     const api = await getChainApiInstance()

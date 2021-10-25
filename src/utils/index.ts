@@ -4,6 +4,7 @@ import { u8aToHex } from '@polkadot/util';
 export const LIMIT_MAX_PAGINATION = 50
 export const DEFAULT_CAPS_AMOUNT = 1150
 export const DEFAULT_FAUCET_BATCH_SIZE = 100
+export const FAUCET_ADDRESS = "5CtE5KeuNPtBazwVHdCyNwxAmSUzdTaM2eG82o1Z4d9uJZfA"
 
 export const validateEmail = (mail: string) => {
     const mailRegEx = /^([\w-\.]+@([\w-]+\.)+[\w-]{2,4})?$/
