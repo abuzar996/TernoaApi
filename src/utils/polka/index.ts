@@ -80,8 +80,11 @@ export const processFaucetClaims = async (arrayOfCAPSAddresses: string[], arrayO
     let givenNFTIdInThisBatch = [] as any
     if (api && sender) {
         const batchedTransactions = [];
-        for (let i = 0; i < arrayOfCAPSAddresses.length; i++) {
-            batchedTransactions.push(api.tx.balances.transferKeepAlive(arrayOfCAPSAddresses[i], unFormatBalance(DEFAULT_CAPS_AMOUNT)));
+        const faucetbalance= await getFaucetBalance();
+        if(faucetbalance>  arrayOfCAPSAddresses.length*DEFAULT_CAPS_AMOUNT){
+            for (let i = 0; i < arrayOfCAPSAddresses.length; i++) {
+                batchedTransactions.push(api.tx.balances.transferKeepAlive(arrayOfCAPSAddresses[i], unFormatBalance(DEFAULT_CAPS_AMOUNT)));
+            }
         }
         for (let i = 0; i < arrayOfNFTClaims.length; i++) {
             if (arrayOfNFTClaims[i].serieId){
