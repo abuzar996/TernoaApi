@@ -153,6 +153,17 @@ export const getFaucetBalance = async () => {
     return balance
 }
 
+export const getUserBalance = async (address: string) => {
+    let userBalance = 0
+    const api = await getChainApiInstance()
+    if (api) {
+        const account = await api.query.system.account(address)
+        const { free } = account.data;
+        userBalance = Number(free / (Math.pow(10, 18)))
+    }
+    return userBalance
+}
+
 export const getFaucetNFTs = async (serieId: string) => {
     try {
         const sender = await getSender()

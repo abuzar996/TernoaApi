@@ -8,12 +8,8 @@ export class Controller {
         try{
             const { walletId } = req.params
             // Check address validity
-            if (
-                !isValidAddress(walletId) ||
-                walletId === FAUCET_ADDRESS
-            )
-            {
-                   throw new Error('Invalid address format')
+            if (!isValidAddress(walletId) || walletId === FAUCET_ADDRESS){
+                throw new Error('Invalid address format')
             }
             const walletIdFormatted = convertAddress(walletId) || walletId
             const claim = await faucetClaimService.addCAPSClaimToQueue(walletIdFormatted)
