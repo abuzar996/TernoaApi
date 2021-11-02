@@ -1,5 +1,6 @@
 import crypto from "crypto";
 import { PaginateResult } from "mongoose";
+import fetch from 'node-fetch'
 import { IUser, IUserDTO } from "../interfaces/IUser";
 import UserModel from "../models/user";
 import { isValidSignature, validateUrl, validateTwitter } from "../utils";
@@ -68,13 +69,63 @@ export class UserService {
    */
   async findUser(
     walletId: string,
+    removeBurned: string
   ): Promise<IUser> {
     try {
-      const user = await UserModel.findOne({ walletId });
+      let user = await UserModel.findOne({ walletId }) as IUser; 
+      const isRemoveBurned = (removeBurned === "true")
       if (!user) throw new Error();
+      if (isRemoveBurned){
+        user = await this.removeBurnedNFTsFromLikes(user)
+      }
       return user
     } catch (err) {
+      console.log(err)
       throw new Error("User can't be found");
+    }
+  }
+
+  async removeBurnedNFTsFromLikes(user: IUser): Promise<IUser>{
+    try{
+      if (user.likedNFTs && user.likedNFTs.length > 0){
+        const json={
+          operationName:"Query",
+          variables:{},
+          query:`query Query{
+            nftEntities(filter: { 
+              and : [
+                {timestampBurn:{isNull:true}}
+                {id: {in: [${user.likedNFTs.map(x => `"${x.nftId}"`).join(',')}]}}
+              ]
+            } 
+            orderBy:CREATED_AT_ASC ){
+              totalCount
+              nodes{
+                id
+              }
+            }
+          }`
+        }
+        const GQLRes = await fetch(`${process.env.INDEXER_URL}/`, {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+              },
+            body:JSON.stringify(json)
+        });
+        const res = await GQLRes.json()
+        if(res && res.data && res.data.nftEntities && user.likedNFTs.length !== res.data.nftEntities.totalCount){
+          const nonBurnedNFTs: any[] = res.data.nftEntities.nodes
+          const newLikedArray = user.likedNFTs.filter(x => nonBurnedNFTs.findIndex(y => y.id === x.nftId) !== -1)
+          const updatedUser = await UserModel.findOneAndUpdate({ walletId: user.walletId }, { likedNFTs: newLikedArray }, { new: true })
+          return updatedUser
+        }
+      }
+      return user
+    }catch(err){
+      console.log(err)
+      return user
     }
   }
 

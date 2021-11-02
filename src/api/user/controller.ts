@@ -63,7 +63,8 @@ export class Controller {
     async getUser(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             const { id } = req.params
-            const user = await UserService.findUser(id);
+            const { removeBurned } = req.query
+            const user = await UserService.findUser(id, removeBurned as string);
             res.json(user);
         } catch (err) {
             next(err);
