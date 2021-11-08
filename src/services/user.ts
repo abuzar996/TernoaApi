@@ -71,7 +71,7 @@ export class UserService {
    */
    async reviewRequested(query: reviewRequestedQuery): Promise<any> {
     try {
-      return UserModel.findOneAndUpdate({walletId: query.walletId}, {reviewRequested: true}, { new: true });
+      return UserModel.findOneAndUpdate({walletId: query.id}, {reviewRequested: true}, { new: true });
     } catch (err) {
       throw new Error("User can't be updated");
     }

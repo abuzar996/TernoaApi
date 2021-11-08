@@ -35,11 +35,11 @@ export const validationGetUsers = (query: any) => {
 
 
 export type reviewRequestedQuery = {
-    walletId: string,
+    id: string,
 }
 export const validationReviewRequested = (query: any) => {
     const validationSchema = Joi.object({
-        walletId: Joi.string().required(),
+        id: Joi.string().required(),
     });
     return validateQuery(validationSchema, query) as reviewRequestedQuery;
 };

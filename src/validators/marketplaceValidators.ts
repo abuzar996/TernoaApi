@@ -2,7 +2,7 @@ import Joi from "joi";
 import { validateQuery } from ".";
 
 export type createMarketplaceQuery = {
-    mdId: number,
+    mpId: number,
     name: string,
     url: string,
     description: string,
@@ -12,7 +12,7 @@ export type createMarketplaceQuery = {
 }
 export const validationCreateMarketplace = (query: any) => {
     const validationSchema = Joi.object({
-        mdId: Joi.number().required(),
+        mpId: Joi.number().required(),
         name: Joi.string().required(),
         url: Joi.string().uri().required(),
         description: Joi.string().required(),
@@ -25,18 +25,18 @@ export const validationCreateMarketplace = (query: any) => {
 
 
 export type getMarketplaceQuery = {
-    mdId: number,
+    mpId: number,
 }
 export const validationGetMarketplace = (query: any) => {
     const validationSchema = Joi.object({
-        mdId: Joi.number().required(),
+        mpId: Joi.number().required(),
     });
     return validateQuery(validationSchema, query) as getMarketplaceQuery;
 };
 
 
 export type updateMarketplaceQuery = {
-    mdId: number,
+    mpId: number,
     name?: string,
     url?: string,
     description?: string,
@@ -46,7 +46,7 @@ export type updateMarketplaceQuery = {
 }
 export const validationUpdateMarketplace = (query: any) => {
     const validationSchema = Joi.object({
-        mdId: Joi.number().required(),
+        mpId: Joi.number().required(),
         name: Joi.string(),
         url: Joi.string().uri(),
         description: Joi.string(),

@@ -17,7 +17,7 @@ export class Controller {
         try{
             const queryValues = validationCreateMarketplace(req.body)
             const mp: IMarketplace = {
-                mpId: queryValues.mdId, 
+                mpId: queryValues.mpId, 
                 name: queryValues.name, 
                 url: queryValues.url, 
                 description: queryValues.description, 
@@ -36,8 +36,8 @@ export class Controller {
     async getMarketplace(req: Request, res: Response, next: NextFunction): Promise<void> {
         try{
             const queryValues = validationGetMarketplace(req.params)
-            const marketplace = await MarketplaceModel.findOne({mpId: queryValues.mdId});
-            if (!marketplace) throw new Error(`Marketplace not foud with mpId : ${queryValues.mdId}`)
+            const marketplace = await MarketplaceModel.findOne({mpId: queryValues.mpId});
+            if (!marketplace) throw new Error(`Marketplace not foud with mpId : ${queryValues.mpId}`)
             res.status(200).json({message: "Marketplace successfully retrieved", marketplace: marketplace});
         }catch(err){
             next(err)
@@ -49,8 +49,8 @@ export class Controller {
             const { mpId } = req.params
             const { name, url, description, logoUrl, salesCommission, type} = req.body
             const queryValues = validationUpdateMarketplace({ mpId, ...req.body})
-            const marketplace = await MarketplaceModel.findOne({mpId: queryValues.mdId});
-            if (!marketplace) throw new Error(`Marketplace not foud with mpId : ${queryValues.mdId}`)
+            const marketplace = await MarketplaceModel.findOne({mpId: queryValues.mpId});
+            if (!marketplace) throw new Error(`Marketplace not foud with mpId : ${queryValues.mpId}`)
             if (name !== undefined) marketplace.name = name
             if (url !== undefined) marketplace.url = url
             if (description !== undefined) marketplace.description = description
