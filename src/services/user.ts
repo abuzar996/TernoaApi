@@ -1,24 +1,31 @@
 import crypto from "crypto";
 import { PaginateResult } from "mongoose";
 import fetch from 'node-fetch'
-import { IUser, IUserDTO } from "../interfaces/IUser";
+import { IUser } from "../interfaces/IUser";
 import UserModel from "../models/user";
-import { isValidSignature, validateUrl, validateTwitter } from "../utils";
+import { isValidSignature, LIMIT_MAX_PAGINATION } from "../utils";
 import { CustomResponse } from "../interfaces/ICustomResponse";
+import { createUserQuery, getUserQuery, getUsersQuery, likeUnlikeQuery, reviewRequestedQuery, updateUserQuery } from "../api/validators/userValidators";
 
 export class UserService {
   /**
-   * Returns all users with pagination
-   * @param page - Page number
+   * Returns users with pagination and selected filters
+   * @param query - see getUsersQuery
    * @param limit - Number of users per page
    * @throws Will throw an error if can't fetch users
    */
-  async getAllUsers(
-    page: number = 1,
-    limit: number = 15
+  async getUsers(
+    query: getUsersQuery,
   ): Promise<CustomResponse<IUser>> {
     try {
-      const res:PaginateResult<IUser>  = await UserModel.paginate({ artist: true }, { page, limit });
+      const pagination  = {
+        page: query.pagination?.page ? query.pagination.page : 1,
+        limit: query.pagination?.limit ? query.pagination.limit : LIMIT_MAX_PAGINATION
+      }
+      const mongoFilter = {$and: [] as any[]}
+      if (query.filter?.walletIds) mongoFilter.$and.push({ walletId: { $in: query.filter.walletIds }})
+      mongoFilter.$and.push({ artist: query.filter?.artist !== undefined ? query.filter.artist : true})
+      const res:PaginateResult<IUser>  = await UserModel.paginate(mongoFilter, pagination);
       const response: CustomResponse<IUser> = {
         totalCount: res.totalDocs,
         data: res.docs,
@@ -27,19 +34,19 @@ export class UserService {
       }
       return response
     } catch (err) {
-      throw new Error("Users can't be fetched");
+      throw new Error("Users can't be found");
     }
   }
 
   /**
    * Creates a new user in DB
-   * @param userDTO - User data
+   * @param query - see createUserQuery
    * @throws Will throw an error if can't create user
    */
-  async createUser(userDTO: IUserDTO): Promise<IUser> {
+  async createUser(query: createUserQuery): Promise<IUser> {
     const nonce = crypto.randomBytes(16).toString("base64");
     try {
-      const newUser = new UserModel({ ...userDTO, nonce });
+      const newUser = new UserModel({ walletId: query.walletId, nonce });
       return await newUser.save();
     } catch (err) {
       throw new Error("User can't be created");
@@ -49,12 +56,12 @@ export class UserService {
 
   /**
    * Creates a new user in DB
-   * @param walletId - wallet Id
+   * @param query - see reviewRequestedQuery
    * @throws Will throw an error if can't create user
    */
-   async reviewRequested(walletId: string): Promise<any> {
+   async reviewRequested(query: reviewRequestedQuery): Promise<any> {
     try {
-      return UserModel.findOneAndUpdate({walletId}, {reviewRequested: true}, { new: true });
+      return UserModel.findOneAndUpdate({walletId: query.walletId}, {reviewRequested: true}, { new: true });
     } catch (err) {
       throw new Error("User can't be updated");
     }
@@ -62,20 +69,16 @@ export class UserService {
 
   /**
    * Finds a user in DB
-   * @param walletId - User's wallet ID
-   * @param incViews - Should increase views counter
-   * @param ignoreCache - Should fetch directly from database and ignore cache
+   * @param query - see getUserQuery
    * @throws Will throw an error if wallet ID doesn't exist
    */
   async findUser(
-    walletId: string,
-    removeBurned: string
+    query: getUserQuery,
   ): Promise<IUser> {
     try {
-      let user = await UserModel.findOne({ walletId }) as IUser; 
-      const isRemoveBurned = (removeBurned === "true")
+      let user = await UserModel.findOne({ walletId: query.id }) as IUser; 
       if (!user) throw new Error();
-      if (isRemoveBurned){
+      if (query.removeBurned){
         user = await this.removeBurnedNFTsFromLikes(user)
       }
       return user
@@ -130,73 +133,25 @@ export class UserService {
   }
 
   /**
-   * Finds multiple users in DB
-   * @param wallet ids - An array of users wallet ids
-   * @throws Will throw an error if DB can't be reached
-   * @return A promise that resolves to the users
-   */
-  async findUsersByWalletId(walletIds?: string[], query?: any, page?: number, limit?: number): Promise<CustomResponse<IUser>> {
-    try {
-      if (!walletIds && !query) throw new Error('Invalid parameters')
-      if (page && limit){
-        const res: PaginateResult<IUser> = await UserModel.paginate(
-          !query ? { walletId: { $in: walletIds } } : JSON.parse(query),
-          {
-            page, 
-            limit
-          }
-        )
-        const response: CustomResponse<IUser> = {
-          totalCount: res.totalDocs,
-          data: res.docs,
-          hasNextPage: res.hasNextPage,
-          hasPreviousPage: res.hasNextPage
-        }
-        return response;
-      }else{
-        const res = await UserModel.find(!query ? { walletId: { $in: walletIds } } : JSON.parse(query));
-        const response: CustomResponse<IUser> = {
-          totalCount: res.length,
-          data: res,
-        }
-        return response;
-      }
-    } catch (err) {
-      throw new Error("Users can't be found");
-    }
-  }
-
-  /**
    * verify signature and update the user
-   * @param walletId - User's public address
-   * @param walletData - User's data for update
+   * @param query - see updateUserQuery
    * @throws Will throw an error if signature is invalid or if user can't be found in db
    * @return A promise of updated user
    */
-  async updateUser(walletId: string, walletData: any): Promise<IUser> {
+  async updateUser(query: updateUserQuery): Promise<IUser> {
     try{
-      const data = JSON.parse(walletData.data)
       try{
-        if (!isValidSignature(walletData.data, walletData.signedMessage, data.walletId)) throw new Error("Invalid signature")
+        if (!isValidSignature(JSON.stringify(query.data), query.signedMessage, query.data.walletId)) throw new Error("Invalid signature")
       }catch(err){
         throw new Error("Invalid signature")
       }
-      let isError=false
-      const {name, customUrl, bio, twitterName, personalUrl, picture, banner} = data
-      if (typeof name !== "string" || name.length===0) isError=true
-      if (customUrl && (typeof customUrl !== "string" || !validateUrl(customUrl))) isError=true
-      if (bio && typeof bio !== "string") isError=true
-      if (twitterName && (typeof twitterName !== "string" || !validateTwitter(twitterName))) isError=true
-      if (personalUrl && (typeof personalUrl !== "string" || !validateUrl(personalUrl))) isError=true
-      if (picture && (typeof picture !== "string" || !validateUrl(picture))) isError=true
-      if (banner && (typeof banner !== "string" || !validateUrl(banner))) isError=true
-      if (isError) throw new Error("Couldn't update user")
-      const userOld = await UserModel.findOne({walletId})
+      const {name, customUrl, bio, twitterName, personalUrl, picture, banner} = query.data
+      const userOld = await UserModel.findOne({walletId: query.data.walletId})
       if (!userOld) throw new Error('User not found in db')
       let twitterVerified = userOld.twitterVerified
       if (userOld.twitterName !== twitterName) twitterVerified = false
       const user = await UserModel.findOneAndUpdate(
-        { walletId },
+        { walletId: query.data.walletId },
         {name, customUrl, bio, twitterName, personalUrl, picture, banner, twitterVerified},
         {new: true}
       );
@@ -257,25 +212,25 @@ export class UserService {
 
   /**
    * Like an NFT
-   * @param walletId - wallet Id
+   * @param query - see likeUnlikeQuery
    * @param nftId - nft Id
    * @throws Will throw an error if already liked or if db can't be reached
    */
-   async likeNft(walletId: string, nftId: string, serieId: string): Promise<IUser> {
+   async likeNft(query: likeUnlikeQuery): Promise<IUser> {
     try {
-      const user  = await UserModel.findOne({walletId});
-      const key = {serieId, nftId}
+      const user  = await UserModel.findOne({walletId: query.walletId});
+      const key = {serieId: query.serieId, nftId: query.nftId}
       if (!user) throw new Error()
       const likedArray = user.likedNFTs || []
       if (likedArray){
-        if (serieId === "0"){
+        if (query.serieId === "0"){
           if (likedArray.map(x => x.nftId).includes(key.nftId)) throw new Error("NFT already liked")
         }else{
           if (likedArray.map(x => x.serieId).includes(key.serieId)) throw new Error("NFT already liked")
         }
       }
       likedArray.push(key)
-      const newUser = await UserModel.findOneAndUpdate({walletId}, {likedNFTs: likedArray},{new: true})
+      const newUser = await UserModel.findOneAndUpdate({walletId: query.walletId}, {likedNFTs: likedArray},{new: true})
       return newUser
     } catch (err) {
       throw new Error("Couldn't like NFT");
@@ -284,24 +239,23 @@ export class UserService {
 
   /**
    * Unlike an NFT
-   * @param walletId - wallet Id
-   * @param nftId - nft Id
+   * @param query - see likeUnlikeQuery
    * @throws Will throw an error if already liked or if db can't be reached
    */
-   async unlikeNft(walletId: string, nftId: string, serieId: string): Promise<IUser> {
+   async unlikeNft(query: likeUnlikeQuery): Promise<IUser> {
     try {
-      const user  = await UserModel.findOne({walletId});
-      const key = {serieId, nftId}
+      const user  = await UserModel.findOne({walletId: query.walletId});
+      const key = {serieId: query.serieId, nftId: query.nftId}
       if (!user || !user.likedNFTs) throw new Error()
       let likedArray = user.likedNFTs
-      if (serieId === "0"){
+      if (query.serieId === "0"){
         if (!likedArray.map(x => x.nftId).includes(key.nftId)) throw new Error("NFT already not liked")
         likedArray = likedArray.filter(x => x.nftId !== key.nftId)
       }else{
         if (!likedArray.map(x => x.serieId).includes(key.serieId)) throw new Error("NFT already not liked")
         likedArray = likedArray.filter(x => x.serieId !== key.serieId)
       }
-      const newUser = await UserModel.findOneAndUpdate({walletId}, {likedNFTs: likedArray},{new: true})
+      const newUser = await UserModel.findOneAndUpdate({walletId: query.walletId}, {likedNFTs: likedArray},{new: true})
       return newUser
     } catch (err) {
       throw new Error("Couldn't unlike NFT");
