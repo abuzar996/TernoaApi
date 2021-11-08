@@ -22,9 +22,19 @@ export class UserService {
         page: query.pagination?.page ? query.pagination.page : 1,
         limit: query.pagination?.limit ? query.pagination.limit : LIMIT_MAX_PAGINATION
       }
-      const mongoFilter = {$and: [] as any[]}
-      if (query.filter?.walletIds) mongoFilter.$and.push({ walletId: { $in: query.filter.walletIds }})
-      mongoFilter.$and.push({ artist: query.filter?.artist !== undefined ? query.filter.artist : true})
+      let mongoFilter: any = {$and: []}
+      if (query.filter){
+        if (query.filter.walletIds) mongoFilter.$and.push({ walletId: { $in: query.filter.walletIds }})
+        if (query.filter.artist !== undefined) mongoFilter.$and.push({ artist: query.filter.artist})
+        if (query.filter.verified !== undefined) mongoFilter.$and.push({ verified: query.filter.verified})
+        if (query.filter.searchText !== undefined) mongoFilter.$and.push({ 
+          $or: [
+            {name: {$regex: query.filter.searchText, $options: "i"}}, 
+            {walletId: {$regex: query.filter.searchText, $options: "i"}}
+          ]
+        })
+      }
+      if (mongoFilter.$and.length === 0) mongoFilter = {}
       const res:PaginateResult<IUser>  = await UserModel.paginate(mongoFilter, pagination);
       const response: CustomResponse<IUser> = {
         totalCount: res.totalDocs,

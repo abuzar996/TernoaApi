@@ -6,6 +6,8 @@ export type getUsersQuery = {
     filter?: {
         walletIds?: string[]
         artist?: boolean
+        verified?: boolean
+        searchText?: string
     },
     pagination?: {
         page?: number
@@ -19,7 +21,9 @@ export const validationGetUsers = (query: any) => {
     const validationSchema = Joi.object({
         filter: Joi.object({
             walletIds: Joi.array().items(Joi.string()),
-            artist: Joi.boolean()
+            artist: Joi.boolean(),
+            verified: Joi.boolean(),
+            searchText: Joi.string()
         }),
         pagination: Joi.object({
             page: Joi.number().integer().min(0),
