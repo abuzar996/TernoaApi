@@ -100,6 +100,7 @@ export class UserService {
 
   async removeBurnedNFTsFromLikes(user: IUser): Promise<IUser>{
     try{
+      let returnUser = user
       if (user.likedNFTs && user.likedNFTs.length > 0){
         const json={
           operationName:"Query",
@@ -132,10 +133,10 @@ export class UserService {
           const nonBurnedNFTs: any[] = res.data.nftEntities.nodes
           const newLikedArray = user.likedNFTs.filter(x => nonBurnedNFTs.findIndex(y => y.id === x.nftId) !== -1)
           const updatedUser = await UserModel.findOneAndUpdate({ walletId: user.walletId }, { likedNFTs: newLikedArray }, { new: true })
-          return updatedUser
+          if (updatedUser) returnUser = updatedUser
         }
       }
-      return user
+      return returnUser
     }catch(err){
       console.log(err)
       return user
@@ -165,6 +166,7 @@ export class UserService {
         {name, customUrl, bio, twitterName, personalUrl, picture, banner, twitterVerified},
         {new: true}
       );
+      if (!user) throw new Error("An error has occured while update, please try again")
       return user
     }catch(err){
       throw err
@@ -241,6 +243,7 @@ export class UserService {
       }
       likedArray.push(key)
       const newUser = await UserModel.findOneAndUpdate({walletId: query.walletId}, {likedNFTs: likedArray},{new: true})
+      if (!newUser) throw new Error("An error has occured while liking an NFT, please try again")
       return newUser
     } catch (err) {
       throw new Error("Couldn't like NFT");
@@ -266,6 +269,7 @@ export class UserService {
         likedArray = likedArray.filter(x => x.serieId !== key.serieId)
       }
       const newUser = await UserModel.findOneAndUpdate({walletId: query.walletId}, {likedNFTs: likedArray},{new: true})
+      if (!newUser) throw new Error("An error has occured while unliking an NFT, please try again")
       return newUser
     } catch (err) {
       throw new Error("Couldn't unlike NFT");
