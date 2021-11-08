@@ -13,15 +13,15 @@ export const isValidSignature = (plainData: string, signedData: string, address:
     return signatureVerify(plainData, signedData, hexPublicKey).isValid;
 }
 
-export const getSerieIdByQrId = (qrId: string) => {
+export const getSerieIdByQrId = (qrId: number) => {
     switch(qrId){
-        case "0":
+        case 0:
             return process.env.NFT_SERIES_ID
-        case "1":
+        case 1:
             return process.env.NFT_SERIES_ID
-        case "2":
+        case 2:
             return process.env.NFT_SERIES_ID
-        case "3":
+        case 3:
             return process.env.NFT_SERIES_ID
         default:
             return process.env.NFT_SERIES_ID

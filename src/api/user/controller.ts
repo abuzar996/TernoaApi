@@ -3,7 +3,7 @@ import fetch from 'node-fetch'
 import UserService from "../../services/user";
 import { OAuth } from "oauth"
 import UserModel from "../../models/user";
-import { validationCreateUser, validationGetUser, validationGetUsers, validationLikeUnlike, validationReviewRequested, validationUpdateUser, validationVerifyTwitter, validationVerifyTwitterCallback } from "../validators/userValidators";
+import { validationCreateUser, validationGetUser, validationGetUsers, validationLikeUnlike, validationReviewRequested, validationUpdateUser, validationVerifyTwitter, validationVerifyTwitterCallback } from "../../validators/userValidators";
 
 export class Controller {
   async getUsers(req: Request, res: Response, next: NextFunction): Promise<any> {

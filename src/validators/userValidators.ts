@@ -1,6 +1,6 @@
 import Joi from "joi";
 import { validateQuery } from ".";
-import { LIMIT_MAX_PAGINATION } from "../../utils";
+import { LIMIT_MAX_PAGINATION } from "../utils";
 
 export type getUsersQuery = {
     filter?: {

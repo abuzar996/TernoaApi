@@ -5,7 +5,7 @@ import { IUser } from "../interfaces/IUser";
 import UserModel from "../models/user";
 import { isValidSignature, LIMIT_MAX_PAGINATION } from "../utils";
 import { CustomResponse } from "../interfaces/ICustomResponse";
-import { createUserQuery, getUserQuery, getUsersQuery, likeUnlikeQuery, reviewRequestedQuery, updateUserQuery } from "../api/validators/userValidators";
+import { createUserQuery, getUserQuery, getUsersQuery, likeUnlikeQuery, reviewRequestedQuery, updateUserQuery } from "../validators/userValidators";
 
 export class UserService {
   /**
