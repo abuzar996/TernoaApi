@@ -93,7 +93,6 @@ export class UserService {
       }
       return user
     } catch (err) {
-      console.log(err)
       throw new Error("User can't be found");
     }
   }
