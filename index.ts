@@ -8,6 +8,7 @@ import errorHandler from "./src/common/error.handler";
 import faucetRouter from './src/api/faucet/router'
 import marketplaceRouter from './src/api/marketplace/router'
 import userRouter from './src/api/user/router'
+import chainTypesRouter from './src/api/chainTypes/router'
 import cronJob from './src/utils/cron'
 
 const app = express()
@@ -51,6 +52,7 @@ if (process.env.SENTRY_DSN) app.use(Sentry.Handlers.tracingHandler());
 app.use('/api/faucet', faucetRouter);
 app.use('/api/marketplace', marketplaceRouter);
 app.use('/api/users', userRouter);
+app.use("/api/chaintypes", chainTypesRouter)
 
 //Sentry error middleware
 if (process.env.SENTRY_DSN) app.use(Sentry.Handlers.errorHandler());
