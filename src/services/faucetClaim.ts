@@ -63,7 +63,7 @@ export class FaucetClaimService {
       const lastClaim = await NFTClaimModel.findOne({ walletId }).sort({ createdAt: -1 })
       //Check if claim is possible
       if (lastClaim) {
-        let err = (new Error(`You need have already claimed NFT`)) as any
+        let err = (new Error(`You have already claimed NFT`)) as any
         err.status = 403
         throw err
       }
