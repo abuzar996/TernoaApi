@@ -18,7 +18,6 @@ export class Controller {
 
   async newUser(req: Request,  res: Response, next: NextFunction): Promise<void> {
       try {
-          console.log(req.body)
           const queryValues = validationCreateUser(typeof req.body === "string" ? JSON.parse(req.body) : req.body)
           let existingUser = null;
           existingUser = await UserModel.findOne({ walletId: queryValues.walletId });
