@@ -93,7 +93,7 @@ export class UserService {
       }
       return user
     } catch (err) {
-      throw new Error("User can't be found");
+      throw new Error(`User ${query.id} can't be found`);
     }
   }
 

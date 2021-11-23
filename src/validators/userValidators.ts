@@ -84,6 +84,9 @@ export type updateUserQuery = {
     }
 }
 export const validationUpdateUser = (query: any) => {
+    if (query.data && typeof query.data === "string"){
+        query.data = JSON.parse(query.data)
+    }
     const validationSchema = Joi.object({
         walletId: Joi.string().required(),
         signedMessage: Joi.string().required(),
