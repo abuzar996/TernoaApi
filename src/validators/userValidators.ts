@@ -90,6 +90,7 @@ export const validationUpdateUser = (query: any) => {
     const validationSchema = Joi.object({
         walletId: Joi.string().required(),
         signedMessage: Joi.string().required(),
+
         data: Joi.object({
             walletId: Joi.string().required(),
             name: Joi.string().required(),
@@ -101,6 +102,8 @@ export const validationUpdateUser = (query: any) => {
             banner: Joi.string().uri(),
             reviewRequested: Joi.boolean(),
             verified: Joi.boolean(),
+            session: Joi.string(),
+            socketUrl: Joi.string().uri(),
         })
 
     });
