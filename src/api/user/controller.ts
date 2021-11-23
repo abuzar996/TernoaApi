@@ -54,7 +54,7 @@ export class Controller {
   }
   async updateUser(req: Request, res: Response, next: NextFunction): Promise<void> {
       try {
-          const queryValues = validationUpdateUser({...req.params, ...JSON.parse(req.body)})
+          const queryValues = validationUpdateUser({...req.params, ...(typeof req.body === "string" ? JSON.parse(req.body) : req.body)})
           const user = await UserService.updateUser(queryValues);
           res.json(user);
       } catch (err) {
