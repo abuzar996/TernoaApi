@@ -99,6 +99,8 @@ export const validationUpdateUser = (query: any) => {
             personalUrl: Joi.string().uri(),
             picture: Joi.string().uri(),
             banner: Joi.string().uri(),
+            reviewRequested: Joi.boolean(),
+            verified: Joi.boolean(),
         })
 
     });
