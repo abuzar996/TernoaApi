@@ -90,20 +90,20 @@ export const validationUpdateUser = (query: any) => {
     const validationSchema = Joi.object({
         walletId: Joi.string().required(),
         signedMessage: Joi.string().required(),
-
         data: Joi.object({
             walletId: Joi.string().required(),
             name: Joi.string().required(),
-            customUrl: Joi.string().uri(),
-            bio: Joi.string(),
-            twitterName: Joi.string().regex(/^@[a-zA-Z0-9_]/),
-            personalUrl: Joi.string().uri(),
-            picture: Joi.string().uri(),
-            banner: Joi.string().uri(),
+            customUrl: Joi.string().uri().allow(null),
+            bio: Joi.string().allow(null),
+            twitterName: Joi.string().regex(/^@[a-zA-Z0-9_]/).allow(null),
+            personalUrl: Joi.string().uri().allow(null),
+            picture: Joi.string().uri().allow(null),
+            banner: Joi.string().uri().allow(null),
             reviewRequested: Joi.boolean(),
             verified: Joi.boolean(),
             session: Joi.string(),
             socketUrl: Joi.string().uri(),
+            twitterVerified: Joi.boolean().allow(null),
         })
 
     });
