@@ -3,7 +3,17 @@ import fetch from 'node-fetch'
 import UserService from "../../services/user";
 import { OAuth } from "oauth"
 import UserModel from "../../models/user";
-import { validationCreateUser, validationGetUser, validationGetUsers, validationLikeUnlike, validationReviewRequested, validationUpdateUser, validationVerifyTwitter, validationVerifyTwitterCallback } from "../../validators/userValidators";
+import { 
+  validationCreateUser, 
+  validationGetUser, 
+  validationGetUsers, 
+  validationLikeUnlike, 
+  validationReviewRequested, 
+  validationUpdateUser, 
+  validationVerifyTwitter, 
+  validationVerifyTwitterCallback,
+  validationLikesRanking,
+} from "../../validators/userValidators";
 
 export class Controller {
   async getUsers(req: Request, res: Response, next: NextFunction): Promise<any> {
@@ -135,6 +145,19 @@ export class Controller {
         res.redirect(process.env.TWITTER_REDIRECT_URL+"&twitterValidated=false")
       }
       res.redirect(process.env.TWITTER_REDIRECT_URL+"&twitterValidated=false")
+    }
+  }
+
+  async getLikesRanking(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const queryValues = validationLikesRanking(req.query)
+      res.json(await UserService.likesRanking(queryValues));
+    } catch (err) {
+      next(err)
     }
   }
 }

@@ -152,4 +152,25 @@ export const validationVerifyTwitterCallback = (query: any) => {
 };
 
 
+export type likesRankingQuery = {
+    pagination?: {
+        page?: number
+        limit?: number
+    }
+}
+export const validationLikesRanking = (query: any) => {
+    let { pagination } = query;
+    if (pagination) pagination = JSON.parse(pagination)
+    const validationSchema = Joi.object({
+        pagination: Joi.object({
+            page: Joi.number().integer().min(0),
+            limit: Joi.number().integer().min(0).max(LIMIT_MAX_PAGINATION),
+        }),
+    });
+    return validateQuery(validationSchema, {pagination}) as likesRankingQuery;
+};
+
+
+
+
 

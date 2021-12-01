@@ -1,11 +1,11 @@
 import crypto from "crypto";
-import { PaginateResult } from "mongoose";
+import mongoose, { PaginateResult, AggregatePaginateResult, AggregatePaginateModel, PaginateModel } from "mongoose";
 import fetch from 'node-fetch'
 import { IUser } from "../interfaces/IUser";
 import UserModel from "../models/user";
 import { isValidSignature, LIMIT_MAX_PAGINATION } from "../utils";
 import { CustomResponse } from "../interfaces/ICustomResponse";
-import { createUserQuery, getUserQuery, getUsersQuery, likeUnlikeQuery, reviewRequestedQuery, updateUserQuery } from "../validators/userValidators";
+import { createUserQuery, getUserQuery, getUsersQuery, likesRankingQuery, likeUnlikeQuery, reviewRequestedQuery, updateUserQuery } from "../validators/userValidators";
 
 export class UserService {
   /**
@@ -35,7 +35,7 @@ export class UserService {
         })
       }
       if (mongoFilter.$and.length === 0) mongoFilter = {}
-      const res:PaginateResult<IUser>  = await UserModel.paginate(mongoFilter, pagination);
+      const res:PaginateResult<IUser>  = await (UserModel as PaginateModel<IUser & mongoose.Document>).paginate(mongoFilter, pagination);
       const response: CustomResponse<IUser> = {
         totalCount: res.totalDocs,
         data: res.docs,
@@ -272,6 +272,36 @@ export class UserService {
       return newUser
     } catch (err) {
       throw new Error("Couldn't unlike NFT");
+    }
+  }
+
+  /**
+   * get series which received likes sorted by number of likes desc
+   * _id in the return objects corresponds to a seriesId
+   * @param query - see likesRankingQuery
+   * @throws Will throw an error if already liked or if db can't be reached
+   */
+   async likesRanking(query: likesRankingQuery): Promise<AggregatePaginateResult<any>>{
+    try {
+      const likesRankingPromise = UserModel.aggregate([
+        {$unwind: "$likedNFTs"},
+        {$group: {
+          _id: "$likedNFTs.serieId",
+          count: {$sum:1}
+        }},
+        { $sort : { count : -1 } },
+      ])
+      const likesRanking = await (UserModel as AggregatePaginateModel<IUser & mongoose.Document>).aggregatePaginate(
+        likesRankingPromise,
+        {
+          page: query.pagination?.page ? query.pagination.page : 1,
+          limit: query.pagination?.limit ? query.pagination.limit : LIMIT_MAX_PAGINATION,
+        }
+      )
+      return likesRanking
+    } catch (err) {
+      console.log(err)
+      throw new Error("Couldn't get nfts likes ranking");
     }
   }
 }

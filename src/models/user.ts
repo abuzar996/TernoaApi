@@ -1,6 +1,7 @@
 import { IUser } from "../interfaces/IUser";
-import mongoose, { PaginateModel } from "mongoose";
+import mongoose, { AggregatePaginateModel, PaginateModel } from "mongoose";
 import mongoosePaginate from "mongoose-paginate-v2";
+import aggregatePaginate  from "mongoose-aggregate-paginate-v2";
 
 const User = new mongoose.Schema({
   walletId: {
@@ -65,14 +66,16 @@ const User = new mongoose.Schema({
   banner: {
     type: String,
   },
-  likedNFTs: [
-    {
+  likedNFTs: [{
+    type: {
       serieId: {type: String}, 
       nftId: {type: String}
-    }
-  ]
+    },
+    index: true,
+  }],
 }, { timestamps: true });
 
 User.plugin(mongoosePaginate);
-const UserModel = mongoose.model<IUser & mongoose.Document>("User", User) as PaginateModel<IUser & mongoose.Document>;
+User.plugin(aggregatePaginate);
+const UserModel = mongoose.model<IUser & mongoose.Document>("User", User) as PaginateModel<IUser & mongoose.Document> | AggregatePaginateModel<IUser & mongoose.Document>;
 export default UserModel;
