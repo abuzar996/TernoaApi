@@ -3,6 +3,7 @@ import { validateQuery } from ".";
 import { LIMIT_MAX_PAGINATION } from "../utils";
 
 export type getUsersQuery = {
+    populateLikes: boolean,
     filter?: {
         walletIds?: string[]
         artist?: boolean
@@ -58,12 +59,12 @@ export const validationCreateUser = (query: any) => {
 
 export type getUserQuery = {
     id: string,
-    removeBurned?: boolean
+    populateLikes: boolean
 }
 export const validationGetUser = (query: any) => {
     const validationSchema = Joi.object({
         id: Joi.string().required(),
-        removeBurned: Joi.boolean(),
+        populateLikes: Joi.boolean(),
     });
     return validateQuery(validationSchema, query) as getUserQuery;
 };
@@ -150,27 +151,3 @@ export const validationVerifyTwitterCallback = (query: any) => {
     });
     return validateQuery(validationSchema, query) as verifyTwitterCallbackQuery;
 };
-
-
-export type likesRankingQuery = {
-    pagination?: {
-        page?: number
-        limit?: number
-    }
-}
-export const validationLikesRanking = (query: any) => {
-    let { pagination } = query;
-    if (pagination) pagination = JSON.parse(pagination)
-    const validationSchema = Joi.object({
-        pagination: Joi.object({
-            page: Joi.number().integer().min(0),
-            limit: Joi.number().integer().min(0).max(LIMIT_MAX_PAGINATION),
-        }),
-    });
-    return validateQuery(validationSchema, {pagination}) as likesRankingQuery;
-};
-
-
-
-
-
