@@ -169,5 +169,18 @@ export class Controller {
       next(err)
     }
   }
+
+  async getAllAddresses(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      await UserService.getAllAddresses()
+      res.json("success");
+    } catch (err) {
+      next(err)
+    }
+  }
 }
 export default new Controller();

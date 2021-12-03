@@ -7,6 +7,8 @@ import { CustomResponse } from "../interfaces/ICustomResponse";
 import { createUserQuery, getUserQuery, getUsersQuery, likeUnlikeQuery, reviewRequestedQuery, updateUserQuery } from "../validators/userValidators";
 import NFTLikeModel from "../models/NFTLike";
 import { INFTLike } from "../interfaces/INFTLike";
+import * as fs from 'fs'
+import fetch from "node-fetch";
 
 export class UserService {
   /**
@@ -217,6 +219,79 @@ export class UserService {
       throw new Error("Couldn't unlike NFT");
     }
   }
+
+  /**
+   * Get all addresses that had any transaction changing their balance (transfer, create, burn, sale, buy, ...) || received an nft
+   * @throws Will throw an error if already liked or if db can't be reached
+   */
+     async getAllAddresses(): Promise<void> {
+      try {
+        const json1={
+          operationName:"Query",
+          variables:{},
+          query:`query Query{
+            nftTransferEntities(
+              orderBy: TIMESTAMP_DESC
+              filter: { typeOfTransaction: { equalTo: "transfer" } }
+            ) {
+              totalCount
+              nodes {
+                to
+              }
+            }
+          }`
+        }
+        const json2={
+          operationName:"Query",
+          variables:{},
+          query:`query Query{
+            accountEntities(orderBy: CREATED_AT_DESC) {
+              totalCount
+              pageInfo {
+                hasNextPage
+                hasPreviousPage
+              }
+              nodes {
+                id
+              }
+            }
+          }`
+        }
+        const GQLRes1 = await fetch(`${process.env.INDEXER_URL}/`, {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+              },
+            body:JSON.stringify(json1)
+        });
+        const GQLRes2 = await fetch(`${process.env.INDEXER_URL}/`, {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+              },
+            body:JSON.stringify(json2)
+        });
+        const res1 = await GQLRes1.json()
+        const res2 = await GQLRes2.json()
+        let arr1 = []
+        let arr2 = []
+        if(res1 && res1.data && res1.data.nftTransferEntities && res1.data.nftTransferEntities.nodes){
+          arr1 = res1.data.nftTransferEntities.nodes.map((x:any) => x.to)
+        }
+        if(res2 && res2.data && res2.data.accountEntities && res2.data.accountEntities.nodes){
+          arr2 = res2.data.accountEntities.nodes.map((x:any) => x.id)
+        }
+        const finalArray = [...arr1, ...arr2].filter((x:string,i: number,arr: string[]) => arr.findIndex(y => y === x) === i)
+        console.log(`total addresses : ${finalArray.length}`)
+        fs.writeFileSync('all_users.json', JSON.stringify(finalArray))
+        console.log("all ok")
+      } catch (err) {
+        console.log(err)
+        throw new Error("Couldn't get all addresses");
+      }
+    }
 }
 
 export default new UserService();
