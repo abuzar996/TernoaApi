@@ -192,10 +192,10 @@ export class UserService {
    */
    async likeNft(query: likeUnlikeQuery): Promise<INFTLike> {
     try {
-      const data = {nftId: query.nftId, serieId: query.serieId, walletId: query.walletId}
+      const data = {serieId: query.serieId, walletId: query.walletId}
       const nftLike  = await NFTLikeModel.findOne(data);
       if (nftLike) throw new Error("NFT already liked")
-      const newLike = new NFTLikeModel(data)
+      const newLike = new NFTLikeModel({nftId: query.nftId, serieId: query.serieId, walletId: query.walletId})
       await newLike.save()
       return newLike
     } catch (err) {
@@ -210,7 +210,7 @@ export class UserService {
    */
    async unlikeNft(query: likeUnlikeQuery): Promise<INFTLike> {
     try {
-      const data = {nftId: query.nftId, serieId: query.serieId, walletId: query.walletId}
+      const data = {serieId: query.serieId, walletId: query.walletId}
       const nftLike  = await NFTLikeModel.findOne(data);
       if (!nftLike) throw new Error("NFT already not liked")
       await NFTLikeModel.deleteOne(data)

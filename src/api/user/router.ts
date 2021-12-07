@@ -7,7 +7,7 @@ router.patch("/reviewRequested/:id", controller.reviewRequested)
 router.get("/", controller.getUsers)
 router.get("/verifyTwitter/callback", controller.verifyTwitterCallback)
 router.get("/verifyTwitter/:id", controller.verifyTwitter)
-router.get("/refacto-likes", controller.refactoLikes)//temp route
+//router.get("/refacto-likes", controller.refactoLikes)//temp route
 //router.get("/getAllAddresses", controller.getAllAddresses)
 router.get("/:id", controller.getUser)
 router.post("/create", controller.newUser)

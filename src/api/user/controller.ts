@@ -163,7 +163,7 @@ export class Controller {
         })
       })
       console.log(`${nbLikes} refactored in total`)
-      console.log(await UserModel.updateMany({}, {$set:{likedNFTs: null}}))
+      //console.log(await UserModel.updateMany({}, {$set:{likedNFTs: null}}))
       res.json("success");
     } catch (err) {
       next(err)
