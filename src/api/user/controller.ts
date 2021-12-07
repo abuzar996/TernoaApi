@@ -148,28 +148,6 @@ export class Controller {
     }
   }
 
-  async refactoLikes(
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ): Promise<void> {
-    try {
-      const users = await UserModel.find()
-      let nbLikes = 0
-      users.forEach(async x => {
-        x.likedNFTs?.forEach(async y => {
-          nbLikes = nbLikes + 1
-          await (new NFTLikeModel({nftId: y.nftId, serieId: y.serieId, walletId: x.walletId})).save()
-        })
-      })
-      console.log(`${nbLikes} refactored in total`)
-      //console.log(await UserModel.updateMany({}, {$set:{likedNFTs: null}}))
-      res.json("success");
-    } catch (err) {
-      next(err)
-    }
-  }
-
   async getAllAddresses(
     req: Request,
     res: Response,
