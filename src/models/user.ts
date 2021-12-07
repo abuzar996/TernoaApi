@@ -65,14 +65,16 @@ const User = new mongoose.Schema({
   banner: {
     type: String,
   },
-  likedNFTs: [
-    {
+  likedNFTs: [{
+    type: {
       serieId: {type: String}, 
       nftId: {type: String}
-    }
-  ]
+    },
+    index: true,
+  }],
 }, { timestamps: true });
 
 User.plugin(mongoosePaginate);
+
 const UserModel = mongoose.model<IUser & mongoose.Document>("User", User) as PaginateModel<IUser & mongoose.Document>;
 export default UserModel;

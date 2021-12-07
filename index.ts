@@ -9,6 +9,7 @@ import faucetRouter from './src/api/faucet/router'
 import marketplaceRouter from './src/api/marketplace/router'
 import userRouter from './src/api/user/router'
 import chainTypesRouter from './src/api/chainTypes/router'
+import NFTLikesRouter from './src/api/nftLikes/router'
 import cronJob from './src/utils/cron'
 
 const app = express()
@@ -53,6 +54,7 @@ app.use('/api/faucet', faucetRouter);
 app.use('/api/marketplace', marketplaceRouter);
 app.use('/api/users', userRouter);
 app.use("/api/chaintypes", chainTypesRouter)
+app.use("/api/nftLikes", NFTLikesRouter)
 
 //Sentry error middleware
 if (process.env.SENTRY_DSN) app.use(Sentry.Handlers.errorHandler());

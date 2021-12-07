@@ -3,7 +3,17 @@ import fetch from 'node-fetch'
 import UserService from "../../services/user";
 import { OAuth } from "oauth"
 import UserModel from "../../models/user";
-import { validationCreateUser, validationGetUser, validationGetUsers, validationLikeUnlike, validationReviewRequested, validationUpdateUser, validationVerifyTwitter, validationVerifyTwitterCallback } from "../../validators/userValidators";
+import { 
+  validationCreateUser, 
+  validationGetUser, 
+  validationGetUsers, 
+  validationLikeUnlike, 
+  validationReviewRequested, 
+  validationUpdateUser, 
+  validationVerifyTwitter, 
+  validationVerifyTwitterCallback,
+} from "../../validators/userValidators";
+import NFTLikeModel from "../../models/NFTLike";
 
 export class Controller {
   async getUsers(req: Request, res: Response, next: NextFunction): Promise<any> {
@@ -135,6 +145,41 @@ export class Controller {
         res.redirect(process.env.TWITTER_REDIRECT_URL+"&twitterValidated=false")
       }
       res.redirect(process.env.TWITTER_REDIRECT_URL+"&twitterValidated=false")
+    }
+  }
+
+  async refactoLikes(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const users = await UserModel.find()
+      let nbLikes = 0
+      users.forEach(async x => {
+        x.likedNFTs?.forEach(async y => {
+          nbLikes = nbLikes + 1
+          await (new NFTLikeModel({nftId: y.nftId, serieId: y.serieId, walletId: x.walletId})).save()
+        })
+      })
+      console.log(`${nbLikes} refactored in total`)
+      console.log(await UserModel.updateMany({}, {$set:{likedNFTs: null}}))
+      res.json("success");
+    } catch (err) {
+      next(err)
+    }
+  }
+
+  async getAllAddresses(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      await UserService.getAllAddresses()
+      res.json("success");
+    } catch (err) {
+      next(err)
     }
   }
 }

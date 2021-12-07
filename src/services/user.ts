@@ -1,11 +1,14 @@
 import crypto from "crypto";
 import { PaginateResult } from "mongoose";
-import fetch from 'node-fetch'
 import { IUser } from "../interfaces/IUser";
 import UserModel from "../models/user";
 import { isValidSignature, LIMIT_MAX_PAGINATION } from "../utils";
 import { CustomResponse } from "../interfaces/ICustomResponse";
 import { createUserQuery, getUserQuery, getUsersQuery, likeUnlikeQuery, reviewRequestedQuery, updateUserQuery } from "../validators/userValidators";
+import NFTLikeModel from "../models/NFTLike";
+import { INFTLike } from "../interfaces/INFTLike";
+import * as fs from 'fs'
+import fetch from "node-fetch";
 
 export class UserService {
   /**
@@ -36,6 +39,12 @@ export class UserService {
       }
       if (mongoFilter.$and.length === 0) mongoFilter = {}
       const res:PaginateResult<IUser>  = await UserModel.paginate(mongoFilter, pagination);
+      if (query.populateLikes){
+        const likedNFTs = await NFTLikeModel.find({walletId: {$in: res.docs.map(x => x.walletId)}})
+        res.docs.forEach(x => {
+          x.likedNFTs = likedNFTs.filter(y => y.walletId === x.walletId)
+        })
+      }
       const response: CustomResponse<IUser> = {
         totalCount: res.totalDocs,
         data: res.docs,
@@ -63,7 +72,6 @@ export class UserService {
     }
   }
 
-
   /**
    * Creates a new user in DB
    * @param query - see reviewRequestedQuery
@@ -86,59 +94,15 @@ export class UserService {
     query: getUserQuery,
   ): Promise<IUser> {
     try {
-      let user = await UserModel.findOne({ walletId: query.id }) as IUser; 
+      let user = await UserModel.findOne({ walletId: query.id }) as IUser;
       if (!user) throw new Error();
-      if (query.removeBurned){
-        user = await this.removeBurnedNFTsFromLikes(user)
+      if (query.populateLikes){
+        const userLikes = await NFTLikeModel.find({walletId: query.id}) as INFTLike[]
+        user.likedNFTs = userLikes
       }
       return user
     } catch (err) {
       throw new Error(`User ${query.id} can't be found`);
-    }
-  }
-
-  async removeBurnedNFTsFromLikes(user: IUser): Promise<IUser>{
-    try{
-      let returnUser = user
-      if (user.likedNFTs && user.likedNFTs.length > 0){
-        const json={
-          operationName:"Query",
-          variables:{},
-          query:`query Query{
-            nftEntities(filter: { 
-              and : [
-                {timestampBurn:{isNull:true}}
-                {id: {in: [${user.likedNFTs.map(x => `"${x.nftId}"`).join(',')}]}}
-              ]
-            } 
-            orderBy:CREATED_AT_ASC ){
-              totalCount
-              nodes{
-                id
-              }
-            }
-          }`
-        }
-        const GQLRes = await fetch(`${process.env.INDEXER_URL}/`, {
-            method: 'POST',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-              },
-            body:JSON.stringify(json)
-        });
-        const res = await GQLRes.json()
-        if(res && res.data && res.data.nftEntities && user.likedNFTs.length !== res.data.nftEntities.totalCount){
-          const nonBurnedNFTs: any[] = res.data.nftEntities.nodes
-          const newLikedArray = user.likedNFTs.filter(x => nonBurnedNFTs.findIndex(y => y.id === x.nftId) !== -1)
-          const updatedUser = await UserModel.findOneAndUpdate({ walletId: user.walletId }, { likedNFTs: newLikedArray }, { new: true })
-          if (updatedUser) returnUser = updatedUser
-        }
-      }
-      return returnUser
-    }catch(err){
-      console.log(err)
-      return user
     }
   }
 
@@ -224,26 +188,16 @@ export class UserService {
   /**
    * Like an NFT
    * @param query - see likeUnlikeQuery
-   * @param nftId - nft Id
    * @throws Will throw an error if already liked or if db can't be reached
    */
-   async likeNft(query: likeUnlikeQuery): Promise<IUser> {
+   async likeNft(query: likeUnlikeQuery): Promise<INFTLike> {
     try {
-      const user  = await UserModel.findOne({walletId: query.walletId});
-      const key = {serieId: query.serieId, nftId: query.nftId}
-      if (!user) throw new Error()
-      const likedArray = user.likedNFTs || []
-      if (likedArray){
-        if (query.serieId === "0"){
-          if (likedArray.map(x => x.nftId).includes(key.nftId)) throw new Error("NFT already liked")
-        }else{
-          if (likedArray.map(x => x.serieId).includes(key.serieId)) throw new Error("NFT already liked")
-        }
-      }
-      likedArray.push(key)
-      const newUser = await UserModel.findOneAndUpdate({walletId: query.walletId}, {likedNFTs: likedArray},{new: true})
-      if (!newUser) throw new Error("An error has occured while liking an NFT, please try again")
-      return newUser
+      const data = {nftId: query.nftId, serieId: query.serieId, walletId: query.walletId}
+      const nftLike  = await NFTLikeModel.findOne(data);
+      if (nftLike) throw new Error("NFT already liked")
+      const newLike = new NFTLikeModel(data)
+      await newLike.save()
+      return newLike
     } catch (err) {
       throw new Error("Couldn't like NFT");
     }
@@ -254,26 +208,90 @@ export class UserService {
    * @param query - see likeUnlikeQuery
    * @throws Will throw an error if already liked or if db can't be reached
    */
-   async unlikeNft(query: likeUnlikeQuery): Promise<IUser> {
+   async unlikeNft(query: likeUnlikeQuery): Promise<INFTLike> {
     try {
-      const user  = await UserModel.findOne({walletId: query.walletId});
-      const key = {serieId: query.serieId, nftId: query.nftId}
-      if (!user || !user.likedNFTs) throw new Error()
-      let likedArray = user.likedNFTs
-      if (query.serieId === "0"){
-        if (!likedArray.map(x => x.nftId).includes(key.nftId)) throw new Error("NFT already not liked")
-        likedArray = likedArray.filter(x => x.nftId !== key.nftId)
-      }else{
-        if (!likedArray.map(x => x.serieId).includes(key.serieId)) throw new Error("NFT already not liked")
-        likedArray = likedArray.filter(x => x.serieId !== key.serieId)
-      }
-      const newUser = await UserModel.findOneAndUpdate({walletId: query.walletId}, {likedNFTs: likedArray},{new: true})
-      if (!newUser) throw new Error("An error has occured while unliking an NFT, please try again")
-      return newUser
+      const data = {nftId: query.nftId, serieId: query.serieId, walletId: query.walletId}
+      const nftLike  = await NFTLikeModel.findOne(data);
+      if (!nftLike) throw new Error("NFT already not liked")
+      await NFTLikeModel.deleteOne(data)
+      return nftLike
     } catch (err) {
       throw new Error("Couldn't unlike NFT");
     }
   }
+
+  /**
+   * Get all addresses that had any transaction changing their balance (transfer, create, burn, sale, buy, ...) || received an nft
+   * @throws Will throw an error if already liked or if db can't be reached
+   */
+     async getAllAddresses(): Promise<void> {
+      try {
+        const json1={
+          operationName:"Query",
+          variables:{},
+          query:`query Query{
+            nftTransferEntities(
+              orderBy: TIMESTAMP_DESC
+              filter: { typeOfTransaction: { equalTo: "transfer" } }
+            ) {
+              totalCount
+              nodes {
+                to
+              }
+            }
+          }`
+        }
+        const json2={
+          operationName:"Query",
+          variables:{},
+          query:`query Query{
+            accountEntities(orderBy: CREATED_AT_DESC) {
+              totalCount
+              pageInfo {
+                hasNextPage
+                hasPreviousPage
+              }
+              nodes {
+                id
+              }
+            }
+          }`
+        }
+        const GQLRes1 = await fetch(`${process.env.INDEXER_URL}/`, {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+              },
+            body:JSON.stringify(json1)
+        });
+        const GQLRes2 = await fetch(`${process.env.INDEXER_URL}/`, {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+              },
+            body:JSON.stringify(json2)
+        });
+        const res1 = await GQLRes1.json()
+        const res2 = await GQLRes2.json()
+        let arr1 = []
+        let arr2 = []
+        if(res1 && res1.data && res1.data.nftTransferEntities && res1.data.nftTransferEntities.nodes){
+          arr1 = res1.data.nftTransferEntities.nodes.map((x:any) => x.to)
+        }
+        if(res2 && res2.data && res2.data.accountEntities && res2.data.accountEntities.nodes){
+          arr2 = res2.data.accountEntities.nodes.map((x:any) => x.id)
+        }
+        const finalArray = [...arr1, ...arr2].filter((x:string,i: number,arr: string[]) => arr.findIndex(y => y === x) === i)
+        console.log(`total addresses : ${finalArray.length}`)
+        fs.writeFileSync('all_users.json', JSON.stringify(finalArray))
+        console.log("all ok")
+      } catch (err) {
+        console.log(err)
+        throw new Error("Couldn't get all addresses");
+      }
+    }
 }
 
 export default new UserService();
