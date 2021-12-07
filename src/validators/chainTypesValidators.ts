@@ -11,3 +11,15 @@ export const validationGetChainTypes = (query: any) => {
     });
     return validateQuery(validationSchema, query) as getChainTypesQuery;
 };
+
+export type getLastBlockForSpecVersionQuery = {
+    specVersion: string
+}
+export const validationGetLastBlockForSpecVersion = (query: any) => {
+    const validationSchema = Joi.object({
+        specVersion: Joi.number().required()
+    });
+    return validateQuery(validationSchema, query) as getLastBlockForSpecVersionQuery;
+};
+
+
