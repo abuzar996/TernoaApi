@@ -23,7 +23,7 @@ export class Controller {
     next: NextFunction
   ): Promise<void> {
     try{
-      const queryValues = validationGetWhitelistSignature(req.query)
+      const queryValues = validationGetWhitelistSignature(req.params)
       const data = await EventWhitelistSignatureModel.findOne({ethAddress: queryValues.ethAddress})
       res.json(data)
     }catch(err){
