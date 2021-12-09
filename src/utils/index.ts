@@ -1,5 +1,6 @@
 import { decodeAddress, signatureVerify } from '@polkadot/util-crypto';
 import { u8aToHex } from '@polkadot/util';
+import { ethers } from 'ethers'
 
 export const LIMIT_MAX_PAGINATION = 50
 export const DEFAULT_CAPS_AMOUNT = 1150
@@ -25,5 +26,16 @@ export const getSerieIdByQrId = (qrId: number) => {
             return process.env.NFT_SERIES_ID
         default:
             return process.env.NFT_SERIES_ID
+    }
+}
+
+export const isValidSignatureEth = (plainData: string, signedData: string, ethAddress: string) => {
+    try{
+        const signerAddress = ethers.utils.verifyMessage(plainData, signedData)
+        if (signerAddress === ethAddress) return true
+        return false
+    }catch(err){
+        console.log(err)
+        return false
     }
 }
