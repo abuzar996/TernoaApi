@@ -16,7 +16,7 @@ const EventWhitelistSignature = new mongoose.Schema({
   signature: {
     type: String,
   },
-  ipfsHash: {
+  ipfsLink: {
     type: String,
   }
 }, { timestamps: true });
