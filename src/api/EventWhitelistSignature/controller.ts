@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import EventWhitelistSignatureModel from "../../models/EventWhitelistSignature";
 import { isValidSignatureEth } from "../../utils";
-import { validationUpdateWhitelistSignature } from "../../validators/EventWhitelistSignatureValidators";
+import { validationUpdateWhitelistSignature } from "../../validators/eventWhitelistSignatureValidators";
 
 export class Controller {
   async getData(
