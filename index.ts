@@ -16,7 +16,7 @@ import cronJob from './src/utils/cron'
 const app = express()
 const port = process.env.PORT || 5000
 const mongoURI = process.env.MONGODB_URI || ""
-
+console.log(eventWhitelistSignatureRouter)
 if (process.env.SENTRY_DSN){
   Sentry.init({
     dsn: process.env.SENTRY_DSN,
