@@ -76,5 +76,5 @@ const User = new mongoose.Schema({
 
 User.plugin(mongoosePaginate);
 
-const UserModel = mongoose.model<IUser & mongoose.Document>("User", User) as PaginateModel<IUser & mongoose.Document>;
+const UserModel = mongoose.model<IUser & mongoose.Document>("User", User) as unknown as PaginateModel<IUser & mongoose.Document>;
 export default UserModel;
