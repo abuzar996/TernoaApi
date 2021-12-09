@@ -15,3 +15,13 @@ export const validationUpdateWhitelistSignature = (query: any) => {
     });
     return validateQuery(validationSchema, query) as updateWhitelistSignatureQuery;
 };
+
+export type getWhitelistSignatureQuery = {
+    ethAddress: string
+}
+export const validationGetWhitelistSignature = (query: any) => {
+    const validationSchema = Joi.object({
+        ethAddress: Joi.string().required(),
+    });
+    return validateQuery(validationSchema, query) as getWhitelistSignatureQuery;
+};

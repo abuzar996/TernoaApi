@@ -3,5 +3,5 @@ import controller from "./controller";
 export default express
     .Router()
     .get("/", controller.getData)
-    //.get("/:ethAddress", controller.getWhitelistSignature)
+    .get("/:ethAddress", controller.getWhitelistSignature)
     .post("/", controller.updateWhitelistSignature)

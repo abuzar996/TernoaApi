@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import EventWhitelistSignatureModel from "../../models/EventWhitelistSignature";
 import { isValidSignatureEth } from "../../utils";
-import { validationUpdateWhitelistSignature } from "../../validators/eventWhitelistSignatureValidators";
+import { validationUpdateWhitelistSignature, validationGetWhitelistSignature } from "../../validators/eventWhitelistSignatureValidators";
 
 export class Controller {
   async getData(
@@ -17,6 +17,20 @@ export class Controller {
     }
   }
 
+  async getWhitelistSignature(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try{
+      const queryValues = validationGetWhitelistSignature(req.query)
+      const data = await EventWhitelistSignatureModel.findOne({ethAddress: queryValues.ethAddress})
+      res.json(data)
+    }catch(err){
+      next(err)
+    }
+  }
+  
   async updateWhitelistSignature(
     req: Request,
     res: Response,

@@ -3,4 +3,5 @@ export interface IEventWhitelistSignature {
     eventNumber: number;
     walletId?: string;
     signature?: string;
+    ipfsHash?: string;
 }
