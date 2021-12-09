@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import EventWhitelistSignatureModel from "../../models/EventWhitelistSignature";
+import EventWhitelistSignatureModel from "../../models/eventWhitelistSignature";
 import { isValidSignatureEth } from "../../utils";
 import { validationUpdateWhitelistSignature, validationGetWhitelistSignature } from "../../validators/eventWhitelistSignatureValidators";
 
