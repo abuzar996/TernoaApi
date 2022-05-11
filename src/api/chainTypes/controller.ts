@@ -6,6 +6,7 @@ export class Controller {
   async getChainTypes(
     req: Request,
     res: Response,
+    
     next: NextFunction
   ): Promise<void> {
     try{
